@@ -2,7 +2,7 @@ use crate::schema::users;
 use diesel::prelude::*;
 use serde::Serialize;
 
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Clone)]
 pub struct User {
     pub id: i32,
     pub alias_id: String,
