@@ -7,6 +7,7 @@ use dotenvy::dotenv;
 use std::env;
 
 mod models;
+mod responses;
 mod schema;
 
 fn main() {
