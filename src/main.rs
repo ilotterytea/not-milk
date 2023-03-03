@@ -8,12 +8,15 @@ use std::env;
 
 mod models;
 mod responses;
+mod routes;
 mod schema;
 
 fn main() {
     println!("Hello, world!");
 
-    rocket::ignite().launch();
+    rocket::ignite()
+        .mount("/api/v1", routes![routes::take_a_sip_of_tea])
+        .launch();
 }
 
 pub fn establish_connection() -> SqliteConnection {
