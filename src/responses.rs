@@ -39,7 +39,7 @@ impl<'a> FromData<'a> for SipRequest {
     type Borrowed = str;
 
     fn transform(
-        request: &rocket::Request,
+        _request: &rocket::Request,
         data: rocket::Data,
     ) -> rocket::data::Transform<rocket::data::Outcome<Self::Owned, Self::Error>> {
         let mut stream = data.open();
@@ -56,7 +56,7 @@ impl<'a> FromData<'a> for SipRequest {
     }
 
     fn from_data(
-        request: &rocket::Request,
+        _request: &rocket::Request,
         outcome: rocket::data::Transformed<'a, Self>,
     ) -> rocket::data::Outcome<Self, Self::Error> {
         let string: &str = outcome.borrowed()?;
