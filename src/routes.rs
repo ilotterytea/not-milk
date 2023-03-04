@@ -114,3 +114,29 @@ pub fn take_a_sip_of_tea(sip_request: SipRequest) -> Custom<Json<GenericResponse
         }),
     )
 }
+
+#[get("/get_user?<id>")]
+pub fn get_user(id: String) -> Custom<Json<GenericResponse<Option<User>>>> {
+    let conn = &mut establish_connection();
+    let user = crate::schema::users::dsl::users
+        .filter(crate::schema::users::dsl::alias_id.eq(id))
+        .first::<User>(conn);
+
+    if user.is_err() {
+        return Custom(
+            Status::NotFound,
+            Json(GenericResponse {
+                status: 404,
+                data: None,
+            }),
+        );
+    }
+
+    Custom(
+        Status::Ok,
+        Json(GenericResponse {
+            status: 200,
+            data: Some(user.unwrap()),
+        }),
+    )
+}

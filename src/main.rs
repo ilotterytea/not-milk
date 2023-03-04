@@ -15,7 +15,10 @@ fn main() {
     println!("Hello, world!");
 
     rocket::ignite()
-        .mount("/api/v1", routes![routes::take_a_sip_of_tea])
+        .mount(
+            "/api/v1",
+            routes![routes::take_a_sip_of_tea, routes::get_user],
+        )
         .launch();
 }
 
