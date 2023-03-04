@@ -17,7 +17,11 @@ fn main() {
     rocket::ignite()
         .mount(
             "/api/v1",
-            routes![routes::take_a_sip_of_tea, routes::get_user],
+            routes![
+                routes::take_a_sip_of_tea,
+                routes::get_user,
+                routes::get_leaderboard
+            ],
         )
         .launch();
 }

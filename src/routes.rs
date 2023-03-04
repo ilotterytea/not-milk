@@ -140,3 +140,34 @@ pub fn get_user(id: String) -> Custom<Json<GenericResponse<Option<User>>>> {
         }),
     )
 }
+
+#[get("/leaderboard")]
+pub fn get_leaderboard() -> Custom<Json<GenericResponse<Vec<(String, i32)>>>> {
+    let conn = &mut establish_connection();
+    let user = crate::schema::users::dsl::users
+        .select((
+            crate::schema::users::dsl::alias_id,
+            crate::schema::users::dsl::points,
+        ))
+        .order(crate::schema::users::dsl::points.desc())
+        .limit(10)
+        .load::<(String, i32)>(conn);
+
+    if user.is_err() {
+        return Custom(
+            Status::InternalServerError,
+            Json(GenericResponse {
+                status: 500,
+                data: Vec::new(),
+            }),
+        );
+    }
+
+    Custom(
+        Status::Ok,
+        Json(GenericResponse {
+            status: 200,
+            data: user.unwrap(),
+        }),
+    )
+}
