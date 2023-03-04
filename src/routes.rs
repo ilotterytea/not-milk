@@ -86,7 +86,7 @@ pub fn take_a_sip_of_tea(sip_request: SipRequest) -> Custom<Json<GenericResponse
     let _points =
         rand::thread_rng().gen_range(min_calories_per_sip..max_calories_per_sip) / calories_in_gram;
 
-    _rs.points = _rs.points + _points;
+    _rs.points += _points;
 
     update(
         users
