@@ -61,7 +61,7 @@ impl<'a> FromData<'a> for SipRequest {
     ) -> rocket::data::Outcome<Self, Self::Error> {
         let string: &str = outcome.borrowed()?;
 
-        let result: Option<SipRequest> = serde_json::from_str(string).unwrap_or_else(|_| None);
+        let result: Option<SipRequest> = serde_json::from_str(string).unwrap_or(None);
 
         if result.is_none() {
             return rocket::Outcome::Failure((Status::UnprocessableEntity, SipRequestError::Parse));
