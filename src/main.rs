@@ -10,6 +10,7 @@ mod models;
 mod responses;
 mod routes;
 mod schema;
+mod structs;
 
 fn main() {
     println!("Hello, world!");
