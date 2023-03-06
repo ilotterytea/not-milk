@@ -69,23 +69,17 @@ pub fn take_a_sip_of_tea(sip_request: SipRequest) -> Custom<Json<GenericResponse
 
     let mut _rs = result.unwrap();
 
-    let calories_in_gram = env::var("CALORIES_IN_GRAM")
-        .unwrap_or("7".to_string())
+    let min_per_sip = env::var("MIN_PER_SIP")
+        .unwrap_or("-10".to_string())
         .parse::<i32>()
         .unwrap();
 
-    let min_calories_per_sip = env::var("MIN_CALORIES_PER_SIP")
-        .unwrap_or("175".to_string())
+    let max_per_sip = env::var("MAX_PER_SIP")
+        .unwrap_or("50".to_string())
         .parse::<i32>()
         .unwrap();
 
-    let max_calories_per_sip = env::var("MAX_CALORIES_PER_SIP")
-        .unwrap_or("1260".to_string())
-        .parse::<i32>()
-        .unwrap();
-
-    let _points =
-        rand::thread_rng().gen_range(min_calories_per_sip..max_calories_per_sip) / calories_in_gram;
+    let _points = rand::thread_rng().gen_range(min_per_sip..max_per_sip);
 
     _rs.points += _points;
 
@@ -104,19 +98,19 @@ pub fn take_a_sip_of_tea(sip_request: SipRequest) -> Custom<Json<GenericResponse
     let file = File::open("./lines.json").unwrap();
     let lines: Lines = serde_json::from_reader(file).unwrap();
 
-    let percent = (_points / max_calories_per_sip) * 100;
+    let percent = (_points as f64 / max_per_sip as f64) * 100.0;
 
-    let message = if percent >= 90 {
+    let message = if percent >= 90.0 {
         lines
             .legendary_lines
             .get(rand::thread_rng().gen_range(0..lines.legendary_lines.len()))
             .unwrap()
-    } else if percent >= 50 && percent < 90 {
+    } else if percent >= 50.0 && percent < 90.0 {
         lines
             .epic_lines
             .get(rand::thread_rng().gen_range(0..lines.epic_lines.len()))
             .unwrap()
-    } else if percent >= 10 && percent < 50 {
+    } else if percent >= 10.0 && percent < 50.0 {
         lines
             .common_lines
             .get(rand::thread_rng().gen_range(0..lines.common_lines.len()))
