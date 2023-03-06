@@ -2,12 +2,13 @@ use diesel::{insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
 use rand::Rng;
 use rocket::{http::Status, response::status::Custom};
 use rocket_contrib::json::Json;
-use std::env;
+use std::{env, fs::File};
 
 use crate::{
     establish_connection,
     models::{NewUser, User},
     responses::{GenericResponse, SipProcessed, SipRequest},
+    structs::Lines,
 };
 
 #[post("/sip", data = "<sip_request>")]
@@ -100,6 +101,33 @@ pub fn take_a_sip_of_tea(sip_request: SipRequest) -> Custom<Json<GenericResponse
     .execute(conn)
     .expect("Cannot update the values!");
 
+    let file = File::open("./lines.json").unwrap();
+    let lines: Lines = serde_json::from_reader(file).unwrap();
+
+    let percent = (_points / max_calories_per_sip) * 100;
+
+    let message = if percent >= 90 {
+        lines
+            .legendary_lines
+            .get(rand::thread_rng().gen_range(0..lines.legendary_lines.len()))
+            .unwrap()
+    } else if percent >= 50 && percent < 90 {
+        lines
+            .epic_lines
+            .get(rand::thread_rng().gen_range(0..lines.epic_lines.len()))
+            .unwrap()
+    } else if percent >= 10 && percent < 50 {
+        lines
+            .common_lines
+            .get(rand::thread_rng().gen_range(0..lines.common_lines.len()))
+            .unwrap()
+    } else {
+        lines
+            .poor_lines
+            .get(rand::thread_rng().gen_range(0..lines.poor_lines.len()))
+            .unwrap()
+    };
+
     Custom(
         Status::Ok,
         Json(GenericResponse {
@@ -108,7 +136,7 @@ pub fn take_a_sip_of_tea(sip_request: SipRequest) -> Custom<Json<GenericResponse
                 delay: interval_time
                     - (i32::try_from(chrono::Utc::now().timestamp()).unwrap() - _rs.last_timestamp),
                 income: _points,
-                message: "We'll see... We'll see... And the winner gets a tea... ".to_string(),
+                message: message.clone(),
                 user: _rs,
             },
         }),
