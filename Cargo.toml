@@ -10,8 +10,9 @@ chrono = "0.4.23"
 diesel = { version = "2.0.3", features = ["sqlite"] }
 dotenvy = "0.15.6"
 rand = "0.8.5"
-rocket = "0.4.11"
-rocket_contrib = { version = "0.4.11", features = ["json"] }
+reqwest = "0.11.14"
+rocket = { version = "0.5.0-rc.2", features = ["json"] }
 serde = { version = "1.0.152", features = ["derive"] }
 serde_json = "1.0.93"
 tokio = { version = "1.26.0", features = ["full"] }
+twitch_api = { version = "0.7.0-rc.4", features = ["helix", "reqwest", "twitch_oauth2"] }

@@ -12,19 +12,18 @@ mod routes;
 mod schema;
 mod structs;
 
-fn main() {
+#[launch]
+fn rocket() -> _ {
     println!("Hello, world!");
 
-    rocket::ignite()
-        .mount(
-            "/api/v1",
-            routes![
-                routes::take_a_sip_of_tea,
-                routes::get_user,
-                routes::get_leaderboard
-            ],
-        )
-        .launch();
+    rocket::build().mount(
+        "/api/v1",
+        routes![
+            routes::take_a_sip_of_tea,
+            routes::get_user,
+            routes::get_leaderboard
+        ],
+    )
 }
 
 pub fn establish_connection() -> SqliteConnection {
