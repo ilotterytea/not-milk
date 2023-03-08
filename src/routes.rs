@@ -21,6 +21,27 @@ pub async fn take_a_sip_of_tea(data: &str) -> Custom<Json<GenericResponse<SipPro
     dotenvy::dotenv().ok();
 
     use crate::schema::users::dsl::*;
+    let client: TwitchClient<reqwest::Client> = TwitchClient::default();
+    let token = match UserToken::from_existing(
+        &reqwest::Client::new(),
+        AccessToken::new(
+            env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN must be set for Twitch API requests!"),
+        ),
+        None,
+        None,
+    )
+    .await
+    {
+        Ok(t) => t,
+        Err(e) => panic!("Couldn't get the token: {}", e),
+    };
+
+    let __id = sip_request.alias_id.to_string();
+    let _id = __id.as_str();
+    let ids: &[&twitch_api::types::UserIdRef] = &[_id.into()];
+    let request = twitch_api::helix::users::GetUsersRequest::ids(ids);
+    let res = &client.helix.req_get(request, &token).await.unwrap();
+    let user = res.data.first().unwrap();
 
     let conn = &mut establish_connection();
     let mut result = users
@@ -59,6 +80,12 @@ pub async fn take_a_sip_of_tea(data: &str) -> Custom<Json<GenericResponse<SipPro
         insert_into(users)
             .values(vec![NewUser {
                 alias_id: sip_request.alias_id.to_string().as_str(),
+                alias_name: user.login.as_str(),
+                alias_pfp: user
+                    .profile_image_url
+                    .clone()
+                    .unwrap_or("".to_string())
+                    .as_str(),
                 platform: sip_request.platform,
                 created_timestamp: i32::try_from(chrono::Utc::now().timestamp()).unwrap(),
                 last_timestamp: i32::try_from(chrono::Utc::now().timestamp()).unwrap(),
@@ -107,26 +134,10 @@ pub async fn take_a_sip_of_tea(data: &str) -> Custom<Json<GenericResponse<SipPro
             _points = rand::thread_rng().gen_range(1..max_per_sip);
             consumer.points -= _points;
 
-            update(users.filter(id.eq(consumer.id)))
+            update(users.find(consumer.id))
                 .set(points.eq(consumer.points))
                 .execute(conn)
                 .expect("Cannot update the values!");
-
-            let client: TwitchClient<reqwest::Client> = TwitchClient::default();
-            let token = match UserToken::from_existing(
-                &reqwest::Client::new(),
-                AccessToken::new(
-                    env::var("ACCESS_TOKEN")
-                        .expect("ACCESS_TOKEN must be set for Twitch API requests!"),
-                ),
-                None,
-                None,
-            )
-            .await
-            {
-                Ok(t) => t,
-                Err(e) => panic!("Couldn't get the token: {}", e),
-            };
 
             let __id = &consumer.alias_id;
             let _id = __id.as_str();
@@ -175,17 +186,15 @@ pub async fn take_a_sip_of_tea(data: &str) -> Custom<Json<GenericResponse<SipPro
 
     _rs.points += _points;
 
-    update(
-        users
-            .filter(alias_id.eq(sip_request.alias_id.to_string()))
-            .filter(platform.eq(sip_request.platform)),
-    )
-    .set((
-        points.eq(_rs.points),
-        last_timestamp.eq(i32::try_from(chrono::Utc::now().timestamp()).unwrap()),
-    ))
-    .execute(conn)
-    .expect("Cannot update the values!");
+    update(users.find(_rs.id))
+        .set((
+            points.eq(_rs.points),
+            last_timestamp.eq(i32::try_from(chrono::Utc::now().timestamp()).unwrap()),
+            alias_name.eq(user.login.to_string()),
+            alias_pfp.eq(user.profile_image_url.clone().unwrap_or("".to_string())),
+        ))
+        .execute(conn)
+        .expect("Cannot update the values!");
 
     Custom(
         Status::Ok,
@@ -229,16 +238,19 @@ pub fn get_user(id: String) -> Custom<Json<GenericResponse<Option<User>>>> {
 }
 
 #[get("/leaderboard")]
-pub fn get_leaderboard() -> Custom<Json<GenericResponse<Vec<(String, i32)>>>> {
+pub fn get_leaderboard(
+) -> Custom<Json<GenericResponse<Vec<(String, Option<String>, Option<String>, i32)>>>> {
     let conn = &mut establish_connection();
     let user = crate::schema::users::dsl::users
         .select((
             crate::schema::users::dsl::alias_id,
+            crate::schema::users::dsl::alias_pfp,
+            crate::schema::users::dsl::alias_name,
             crate::schema::users::dsl::points,
         ))
         .order(crate::schema::users::dsl::points.desc())
         .limit(10)
-        .load::<(String, i32)>(conn);
+        .load::<(String, Option<String>, Option<String>, i32)>(conn);
 
     if user.is_err() {
         return Custom(
