@@ -105,12 +105,12 @@ pub fn take_a_sip_of_tea(sip_request: SipRequest) -> Custom<Json<GenericResponse
             .legendary_lines
             .get(rand::thread_rng().gen_range(0..lines.legendary_lines.len()))
             .unwrap()
-    } else if percent >= 50.0 && percent < 90.0 {
+    } else if (50.0..90.0).contains(&percent) {
         lines
             .epic_lines
             .get(rand::thread_rng().gen_range(0..lines.epic_lines.len()))
             .unwrap()
-    } else if percent >= 10.0 && percent < 50.0 {
+    } else if (10.0..50.0).contains(&percent) {
         lines
             .common_lines
             .get(rand::thread_rng().gen_range(0..lines.common_lines.len()))
