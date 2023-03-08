@@ -1,7 +1,13 @@
-# NOT a milk
+# NOT milk
 
-A silly IRC minigame about drinking NOT a milk.
-Specially made for [my Twitch chat bot](https://twitch.tv/fembajbot)!
+A silly minigame about drinking NOT milk.
+You can see the actual use of this source code on [Twitch](https://twitch.tv/ilotterytea) by simply writing `🥛 sip` in the chat room!
+
+## Features
+
++ Drinking non-milk with a delay of 20 minutes *(be careful, you may get real milk)*.
++ Store for f█████ ████s that boost your stats in the game and in real life *(WIP)*.
++ 'Femboy Hooters' *(at an early stage of development)*.
 
 ## Prerequisites
 
@@ -10,13 +16,25 @@ Specially made for [my Twitch chat bot](https://twitch.tv/fembajbot)!
 
 ## Installation
 
+1. Clone the repo:
+
 ```bash
-git clone https://github.com/ilotterytea/not-a-milk.git
-cd not-a-milk
-echo DATABASE_URL=database.db > .env
+git clone https://github.com/ilotterytea/not-milk.git
+cd not-milk
+```
+
+2. Setup the environment variables:<br>
+*.env example:*
+
+```env
+DATABASE_URL=database.db
+ACCESS_TOKEN=PUT_YOUR_TWITCH_ACCESS_TOKEN_HERE_FROM_YOUR_TWITCH_DEV_APPLICATION
+```
+
+3. Finish the installation:
+
+```bash
 diesel setup
-diesel migration run
-cargo build
 cargo run
 ```
 
