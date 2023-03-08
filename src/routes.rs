@@ -1,6 +1,7 @@
 use diesel::{insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
 use rand::Rng;
 use rocket::{http::Status, response::status::Custom, serde::json::Json};
+use rocket_dyn_templates::{context, Template};
 use std::{env, fs::File};
 use twitch_api::{
     twitch_oauth2::{AccessToken, UserToken},
@@ -13,6 +14,11 @@ use crate::{
     responses::{GenericResponse, SipProcessed, SipRequest},
     structs::Lines,
 };
+
+#[get("/")]
+pub fn index() -> Template {
+    Template::render("index", context! {})
+}
 
 #[post("/sip", data = "<data>")]
 pub async fn take_a_sip_of_tea(data: &str) -> Custom<Json<GenericResponse<SipProcessed>>> {

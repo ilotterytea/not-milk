@@ -4,6 +4,8 @@ extern crate rocket;
 
 use diesel::prelude::*;
 use dotenvy::dotenv;
+use rocket::fs::FileServer;
+use rocket_dyn_templates::Template;
 use std::env;
 
 mod models;
@@ -16,14 +18,18 @@ mod structs;
 fn rocket() -> _ {
     println!("Hello, world!");
 
-    rocket::build().mount(
-        "/api/v1",
-        routes![
-            routes::take_a_sip_of_tea,
-            routes::get_user,
-            routes::get_leaderboard
-        ],
-    )
+    rocket::build()
+        .attach(Template::fairing())
+        .mount("/", routes![routes::index])
+        .mount(
+            "/api/v1",
+            routes![
+                routes::take_a_sip_of_tea,
+                routes::get_user,
+                routes::get_leaderboard
+            ],
+        )
+        .mount("/static", FileServer::from("static"))
 }
 
 pub fn establish_connection() -> SqliteConnection {

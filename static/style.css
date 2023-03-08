@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: #aaaaaa;
+}
+
+/** Container. */
+.container {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.wrapper {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
