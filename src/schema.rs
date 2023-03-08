@@ -9,5 +9,7 @@ diesel::table! {
         inventory -> Nullable<Text>,
         created_timestamp -> Integer,
         last_timestamp -> Integer,
+        alias_name -> Nullable<Text>,
+        alias_pfp -> Nullable<Text>,
     }
 }
