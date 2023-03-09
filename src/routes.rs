@@ -123,10 +123,14 @@ pub async fn take_a_sip_of_tea(data: &str) -> Custom<Json<GenericResponse<SipPro
     let lines: Lines = serde_json::from_reader(file).unwrap();
 
     let mut percent = (_points as f64 / max_per_sip as f64) * 100.0;
-    let event_id = rand::thread_rng().gen_range(0..2);
+    let event_id = rand::thread_rng().gen_range(0..100);
 
     let message = match event_id {
-        1 => {
+        0 => {
+            _points = -99;
+            "you were cursed with an intolerance to my milk 🥛 😔 ".to_string()
+        }
+        (1..15) => {
             let mut consumers = users
                 .filter(platform.eq(sip_request.platform))
                 .filter(alias_id.ne(sip_request.alias_id.to_string()))
