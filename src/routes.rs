@@ -1,6 +1,12 @@
-use diesel::{insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{
+    insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl, SqliteExpressionMethods,
+};
 use rand::Rng;
-use rocket::{http::Status, response::status::Custom, serde::json::Json};
+use rocket::{
+    http::Status,
+    response::{status::Custom, Redirect},
+    serde::json::Json,
+};
 use rocket_dyn_templates::{context, Template};
 use std::{env, fs::File};
 use twitch_api::{
@@ -16,8 +22,28 @@ use crate::{
 };
 
 #[get("/")]
-pub fn index() -> Template {
-    Template::render("index", context! {})
+pub fn index() -> Redirect {
+    Redirect::to(uri!("/leaderboard"))
+}
+
+#[get("/leaderboard")]
+pub fn leaderboard() -> Template {
+    use crate::schema::users::dsl::*;
+
+    let conn = &mut establish_connection();
+    let _users = users
+        .filter(alias_name.is_not_null())
+        .filter(alias_pfp.is_not_null())
+        .order(points.desc())
+        .load::<User>(conn)
+        .unwrap();
+
+    Template::render(
+        "leaderboard",
+        context! {
+            users: _users
+        },
+    )
 }
 
 #[post("/sip", data = "<data>")]

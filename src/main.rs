@@ -20,7 +20,7 @@ fn rocket() -> _ {
 
     rocket::build()
         .attach(Template::fairing())
-        .mount("/", routes![routes::index])
+        .mount("/", routes![routes::index, routes::leaderboard])
         .mount(
             "/api/v1",
             routes![
