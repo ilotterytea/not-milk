@@ -1,24 +1,10 @@
-[package]
-name = "not-milk"
+[workspace]
+members = ["infrastructure", "twitch-bot", "server"]
+
+[workspace.package]
 description = "A silly minigame about drinking NOT milk."
 version = "1.0.0"
 authors = ["ilotterytea <ilotterytea@pm.me>"]
-license = "MIT"
-keywords = ["minigame", "milk", "twitch"]
 edition = "2021"
+publish = false
 repository = "https://github.com/ilotterytea/not-milk"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-chrono = "0.4.23"
-diesel = { version = "2.0.3", features = ["sqlite"] }
-dotenvy = "0.15.6"
-rand = "0.8.5"
-reqwest = "0.11.14"
-rocket = { version = "0.5.0-rc.2", features = ["json"] }
-rocket_dyn_templates = { version = "0.1.0-rc.2", features = ["handlebars"] }
-serde = { version = "1.0.152", features = ["derive"] }
-serde_json = "1.0.93"
-tokio = { version = "1.26.0", features = ["full"] }
-twitch_api = { version = "0.7.0-rc.4", features = ["helix", "reqwest", "twitch_oauth2"] }
