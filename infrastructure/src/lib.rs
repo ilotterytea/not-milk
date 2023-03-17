@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate diesel;
-
 use diesel::{Connection, SqliteConnection};
 use std::env;
 
