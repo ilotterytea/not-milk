@@ -1,20 +1,17 @@
 #[macro_use]
 extern crate diesel;
 
+use diesel::{Connection, SqliteConnection};
+use std::env;
+
 pub mod models;
 pub mod schema;
 
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+pub fn establish_connection() -> SqliteConnection {
+    dotenvy::dotenv().ok();
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set!");
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+    SqliteConnection::establish(&database_url)
+        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
