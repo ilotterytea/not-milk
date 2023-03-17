@@ -15,6 +15,7 @@ diesel::table! {
         alias_id -> Integer,
         alias_name -> Text,
         alias_pfp -> Text,
+        is_suspended -> Integer,
         created_at -> Integer,
     }
 }
