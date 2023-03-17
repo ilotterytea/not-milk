@@ -10,6 +10,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    channels (id) {
+        id -> Integer,
+        alias_id -> Integer,
+        is_parted -> Integer,
+        joined_at -> Integer,
+    }
+}
+
+diesel::table! {
     consumers (id) {
         id -> Integer,
         alias_id -> Integer,
@@ -21,6 +30,16 @@ diesel::table! {
 }
 
 diesel::table! {
+    lines (id) {
+        id -> Integer,
+        line -> Text,
+        category_id -> Integer,
+        channel_id -> Nullable<Integer>,
+        is_disabled -> Integer,
+    }
+}
+
+diesel::table! {
     savegames (consumer_id) {
         consumer_id -> Integer,
         points -> Integer,
@@ -28,9 +47,12 @@ diesel::table! {
 }
 
 diesel::joinable!(activities -> consumers (consumer_id));
+diesel::joinable!(lines -> channels (channel_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     activities,
+    channels,
     consumers,
+    lines,
     savegames,
 );
