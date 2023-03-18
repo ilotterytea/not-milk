@@ -1,11 +1,14 @@
 use std::{cmp::Ordering, env};
 
-use diesel::{insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{delete, insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
 use infrastructure::{
     establish_connection,
-    models::{Consumer, NewConsumer, NewPointsHistory, NewSavegame, PointsHistory, Savegame},
+    models::{
+        Consumer, NewConsumer, NewPointsHistory, NewSavegame, PointsHistory, Savegame, Suspension,
+    },
     schema::{
         consumers::dsl as cs, lines::dsl as ln, points_history::dsl as ph, savegames::dsl as sg,
+        suspensions::dsl as sus,
     },
 };
 
@@ -71,6 +74,39 @@ pub async fn run(user_id: String) -> Option<String> {
                 .first::<Consumer>(conn)
                 .unwrap()
         });
+
+    let _suspension = sus::suspensions.find(consumer.id).first::<Suspension>(conn);
+
+    if _suspension.is_ok() {
+        let suspension = _suspension.unwrap();
+
+        let passed_time =
+            i32::try_from(chrono::Utc::now().timestamp()).unwrap() - suspension.timestamp;
+
+        if passed_time > suspension.duration && suspension.duration < 0 {
+            delete(sus::suspensions.find(suspension.consumer_id))
+                .execute(conn)
+                .expect("Couldn't delete the suspension!");
+        } else {
+            return Some(format!(
+                "{}: sorry, master.. b-but you {} {} 🥛🚫 😭 ",
+                user.login,
+                if suspension.duration < 0 {
+                    "have been permanently banned".to_string()
+                } else {
+                    format!(
+                        "were timed out for {}",
+                        humanize_timestamp_like_timer(suspension.duration - passed_time)
+                    )
+                },
+                if suspension.reason.is_none() {
+                    "for being a 'not milk' denier".to_string()
+                } else {
+                    format!("for {}", suspension.reason.unwrap())
+                }
+            ));
+        }
+    }
 
     let histories = ph::points_history
         .filter(ph::consumer_id.eq(consumer.id))
