@@ -3,8 +3,8 @@ use std::env;
 use diesel::{insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
 use infrastructure::{
     establish_connection,
-    models::{Consumer, NewConsumer},
-    schema::consumers::dsl as cs,
+    models::{Consumer, NewConsumer, NewSavegame},
+    schema::{consumers::dsl as cs, savegames::dsl as sg},
 };
 use twitch_api::{
     helix::users::GetUsersRequest,
@@ -56,10 +56,18 @@ pub async fn sync_consumer(user_id: &str) -> Option<Consumer> {
                 .execute(conn)
                 .expect("Couldn't create a new user!");
 
-            cs::consumers
+            let c = cs::consumers
                 .filter(cs::alias_id.eq(user_id.parse::<i32>().unwrap()))
                 .first::<Consumer>(conn)
-                .expect("Couldn't get the user!")
+                .expect("Couldn't get the user!");
+
+            // Create a savegame for a new user:
+            insert_into(sg::savegames)
+                .values(vec![NewSavegame { consumer_id: c.id }])
+                .execute(conn)
+                .expect("Couldn't create a new savegame!");
+
+            c
         });
 
     consumer.alias_name = user.login.to_string();
