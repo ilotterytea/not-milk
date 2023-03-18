@@ -1,3 +1,4 @@
+#![feature(exclusive_range_pattern)]
 use dotenvy::dotenv;
 use std::env;
 use twitch_irc::{
@@ -6,6 +7,7 @@ use twitch_irc::{
 };
 
 mod handlers;
+mod smol_commands;
 mod utils;
 
 #[tokio::main]
