@@ -6,6 +6,7 @@ use twitch_irc::{
 };
 
 mod handlers;
+mod utils;
 
 #[tokio::main]
 async fn main() {
