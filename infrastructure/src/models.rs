@@ -7,7 +7,6 @@ pub struct Consumer {
     pub alias_id: i32,
     pub alias_name: String,
     pub alias_pfp: String,
-    pub is_suspended: i32,
     pub created_at: i32,
 }
 
@@ -82,4 +81,21 @@ pub struct NewLine<'a> {
     pub line: &'a str,
     pub category_id: i32,
     pub channel_id: Option<i32>,
+}
+
+#[derive(Queryable)]
+pub struct Suspension {
+    pub consumer_id: i32,
+    pub reason: Option<String>,
+    pub duration: i32,
+    pub timestamp: i32,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = suspensions)]
+pub struct NewSuspension<'a> {
+    pub consumer_id: i32,
+    pub reason: Option<&'a str>,
+    pub duration: i32,
+    pub timestamp: i32,
 }

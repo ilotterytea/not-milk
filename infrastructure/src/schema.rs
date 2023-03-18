@@ -15,7 +15,6 @@ diesel::table! {
         alias_id -> Integer,
         alias_name -> Text,
         alias_pfp -> Text,
-        is_suspended -> Integer,
         created_at -> Integer,
     }
 }
@@ -48,7 +47,17 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    suspensions (consumer_id) {
+        consumer_id -> Integer,
+        reason -> Nullable<Text>,
+        duration -> Integer,
+        timestamp -> Integer,
+    }
+}
+
 diesel::joinable!(lines -> channels (channel_id));
+diesel::joinable!(suspensions -> channels (consumer_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     channels,
@@ -56,4 +65,5 @@ diesel::allow_tables_to_appear_in_same_query!(
     lines,
     points_history,
     savegames,
+    suspensions,
 );
