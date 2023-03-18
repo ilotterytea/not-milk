@@ -3,9 +3,7 @@ use std::{cmp::Ordering, env};
 use diesel::{delete, insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
 use infrastructure::{
     establish_connection,
-    models::{
-        Consumer, NewConsumer, NewPointsHistory, NewSavegame, PointsHistory, Savegame, Suspension,
-    },
+    models::{Consumer, NewPointsHistory, NewSavegame, PointsHistory, Savegame, Suspension},
     schema::{
         consumers::dsl as cs, lines::dsl as ln, points_history::dsl as ph, savegames::dsl as sg,
         suspensions::dsl as sus,
@@ -13,67 +11,13 @@ use infrastructure::{
 };
 
 use rand::Rng;
-use twitch_api::{
-    helix::users::GetUsersRequest,
-    twitch_oauth2::{AccessToken, UserToken},
-    types::UserIdRef,
-    TwitchClient,
-};
 
-use crate::utils::humanize_timestamp_like_timer;
+use crate::utils::{humanize_timestamp_like_timer, sync_consumer};
 
-pub async fn run(user_id: String) -> Option<String> {
-    // Getting a Twitch information about user from provided user_id:
-    let reqwest_client = reqwest::Client::new();
-
-    let token = match UserToken::from_existing(
-        &reqwest_client,
-        AccessToken::new(
-            env::var("TWITCH_ACCESS_TOKEN")
-                .expect("TWITCH_ACCESS_TOKEN must be set for Twitch Helix API requests!"),
-        ),
-        None,
-        None,
-    )
-    .await
-    {
-        Ok(t) => t,
-        Err(e) => panic!("Got error: {}", e),
-    };
-
-    let api_client: TwitchClient<reqwest::Client> = TwitchClient::default();
-    let ids: &[&UserIdRef] = &[user_id.as_str().into()];
-
-    let users = &api_client
-        .helix
-        .req_get(GetUsersRequest::ids(ids), &token)
-        .await
-        .expect("Unable to send a request!");
-
-    let user = users.data.first()?;
-
+pub async fn run(user_id: &str) -> Option<String> {
     // Getting a 'Not milk' information about user from provided user_id:
-    let _user_id = user.id.to_string().parse::<i32>().unwrap();
-
     let conn = &mut establish_connection();
-    let mut consumer = cs::consumers
-        .filter(cs::alias_id.eq(&_user_id))
-        .first::<Consumer>(conn)
-        .unwrap_or_else(|_| {
-            insert_into(cs::consumers)
-                .values(vec![NewConsumer {
-                    alias_id: _user_id,
-                    alias_pfp: user.profile_image_url.as_ref().unwrap().as_str(),
-                    alias_name: user.login.as_str(),
-                    created_at: i32::try_from(chrono::Utc::now().timestamp()).unwrap(),
-                }])
-                .execute(conn)
-                .expect("Couldn't insert the values");
-            cs::consumers
-                .filter(cs::alias_id.eq(&_user_id))
-                .first::<Consumer>(conn)
-                .unwrap()
-        });
+    let consumer = sync_consumer(user_id).await?;
 
     let _suspension = sus::suspensions.find(consumer.id).first::<Suspension>(conn);
 
@@ -90,7 +34,7 @@ pub async fn run(user_id: String) -> Option<String> {
         } else {
             return Some(format!(
                 "{}: sorry, master.. b-but you {} {} 🥛🚫 😭 ",
-                user.login,
+                consumer.alias_name,
                 if suspension.duration < 0 {
                     "have been permanently banned".to_string()
                 } else {
@@ -126,7 +70,7 @@ pub async fn run(user_id: String) -> Option<String> {
         if difference < delay {
             return Some(format!(
                 "{}: please wait! i need {} to make another milk for you 🫙  😣",
-                user.login,
+                consumer.alias_name,
                 humanize_timestamp_like_timer(delay - difference)
             ));
         }
@@ -251,18 +195,6 @@ pub async fn run(user_id: String) -> Option<String> {
             }
         }
     };
-
-    // Sync the sender's username and pfp:
-    consumer.alias_name = user.login.to_string();
-    consumer.alias_pfp = user.profile_image_url.as_ref().unwrap().to_owned();
-
-    update(cs::consumers.find(consumer.id))
-        .set((
-            cs::alias_name.eq(&consumer.alias_name),
-            cs::alias_pfp.eq(&consumer.alias_pfp),
-        ))
-        .execute(conn)
-        .expect("Couldn't update the consumer's alias name and pfp!");
 
     // Update the sender's points:
     savegame.points += points;

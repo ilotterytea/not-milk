@@ -13,7 +13,7 @@ pub async fn irc_message_handler(
 
     if text.starts_with("🥛 ") {
         let msg: Option<String> = match text.substring(1, text.len()).trim() {
-            "sip" => smol_commands::sip::run(message.sender.id.clone()).await,
+            "sip" => smol_commands::sip::run(message.sender.id.as_str()).await,
             "place" => smol_commands::place::run(message.sender.id.as_str()).await,
             "top" => smol_commands::top::run(),
             _ => None,
