@@ -1,15 +1,6 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    activities (id) {
-        id -> Integer,
-        consumer_id -> Integer,
-        action_id -> Integer,
-        timestamp -> Integer,
-    }
-}
-
-diesel::table! {
     channels (id) {
         id -> Integer,
         alias_id -> Integer,
@@ -40,19 +31,29 @@ diesel::table! {
 }
 
 diesel::table! {
+    points_history (id) {
+        id -> Integer,
+        consumer_id -> Integer,
+        timestamp -> Integer,
+        caused_by_consumer_id -> Nullable<Integer>,
+        difference -> Integer,
+        points_before_difference -> Integer,
+    }
+}
+
+diesel::table! {
     savegames (consumer_id) {
         consumer_id -> Integer,
         points -> Integer,
     }
 }
 
-diesel::joinable!(activities -> consumers (consumer_id));
 diesel::joinable!(lines -> channels (channel_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
-    activities,
     channels,
     consumers,
     lines,
+    points_history,
     savegames,
 );

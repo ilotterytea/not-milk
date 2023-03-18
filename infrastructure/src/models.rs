@@ -33,18 +33,22 @@ pub struct NewSavegame {
 }
 
 #[derive(Queryable)]
-pub struct Activity {
+pub struct PointsHistory {
     pub id: i32,
     pub consumer_id: i32,
-    pub action_id: i32,
     pub timestamp: i32,
+    pub caused_by_consumer_id: Option<i32>,
+    pub difference: i32,
+    pub points_before_difference: i32,
 }
 
 #[derive(Insertable)]
-#[diesel(table_name = activities)]
-pub struct NewActivity {
+#[diesel(table_name = points_history)]
+pub struct NewPointsHistory {
     pub consumer_id: i32,
-    pub action_id: i32,
+    pub caused_by_consumer_id: Option<i32>,
+    pub difference: i32,
+    pub points_before_difference: i32,
     pub timestamp: i32,
 }
 
