@@ -85,7 +85,7 @@ pub fn lookup_user(id: &str) -> Custom<Template> {
 
             format!("{} pumped the milk out of you!", c.alias_name,)
         } else {
-            format!("Earned via 🥛 sip command!")
+            "Earned via 🥛 sip command!".to_string()
         };
 
         recent_activity.push((
