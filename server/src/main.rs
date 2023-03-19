@@ -11,5 +11,8 @@ fn rocket() -> _ {
     rocket::build()
         .attach(Template::fairing())
         .mount("/static", FileServer::from("static"))
-        .mount("/", routes![routes::frontend::home])
+        .mount(
+            "/",
+            routes![routes::frontend::home, routes::frontend::search],
+        )
 }
