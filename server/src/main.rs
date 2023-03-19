@@ -13,6 +13,10 @@ fn rocket() -> _ {
         .mount("/static", FileServer::from("static"))
         .mount(
             "/",
-            routes![routes::frontend::home, routes::frontend::search],
+            routes![
+                routes::frontend::home,
+                routes::frontend::search,
+                routes::frontend::lookup_user
+            ],
         )
 }

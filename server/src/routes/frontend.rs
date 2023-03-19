@@ -1,7 +1,12 @@
 use std::env;
 
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
-use infrastructure::{establish_connection, models::Consumer, schema::consumers::dsl as cs};
+use infrastructure::{
+    establish_connection,
+    models::{Consumer, PointsHistory, Savegame},
+    schema::{consumers::dsl as cs, points_history::dsl as ph, savegames::dsl as sg},
+};
+use rocket::{http::Status, response::status::Custom};
 use rocket_dyn_templates::{context, Template};
 
 #[get("/")]
@@ -35,5 +40,72 @@ pub fn search(query: &str) -> Template {
             query: query,
             users: consumers,
         },
+    )
+}
+
+#[get("/user/<id>")]
+pub fn lookup_user(id: &str) -> Custom<Template> {
+    let conn = &mut establish_connection();
+
+    let _consumer = cs::consumers
+        .filter(cs::alias_name.eq(id))
+        .first::<Consumer>(conn);
+
+    if _consumer.is_err() {
+        return Custom(
+            Status::NotFound,
+            Template::render(
+                "404",
+                context! {
+                    name: id
+                },
+            ),
+        );
+    }
+
+    let consumer = _consumer.unwrap();
+    let savegame = sg::savegames
+        .find(consumer.id)
+        .first::<Savegame>(conn)
+        .expect("Couldn't load the savegame!");
+
+    let activities = ph::points_history
+        .filter(ph::consumer_id.eq(consumer.id))
+        .load::<PointsHistory>(conn)
+        .expect("Couldn't get the points history!");
+
+    let mut recent_activity: Vec<(i32, String, i32, i32)> = vec![];
+
+    for activity in &activities {
+        let message = if activity.caused_by_consumer_id.is_some() {
+            let c = cs::consumers
+                .find(activity.caused_by_consumer_id.unwrap())
+                .first::<Consumer>(conn)
+                .expect("Couldn't get the consumer!");
+
+            format!("{} pumped the milk out of you!", c.alias_name,)
+        } else {
+            format!("Earned via 🥛 sip command!")
+        };
+
+        recent_activity.push((
+            activity.timestamp,
+            message,
+            activity.difference,
+            activity.points_before_difference,
+        ));
+    }
+
+    Custom(
+        rocket::http::Status::Ok,
+        Template::render(
+            "user",
+            context! {
+                name: consumer.alias_name,
+                pfp: consumer.alias_pfp,
+                current: savegame.points,
+                activities: recent_activity
+            },
+        ),
     )
 }
