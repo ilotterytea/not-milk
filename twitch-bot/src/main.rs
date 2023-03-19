@@ -35,10 +35,8 @@ async fn main() {
     let (mut incoming_messages, client) =
         TwitchIRCClient::<SecureTCPTransport, StaticLoginCredentials>::new(config);
 
-    if env::var("TWITCH_INITIAL_CHANNEL_NAMES").is_ok() {
-        for name in env::var("TWITCH_INITIAL_CHANNEL_NAMES").unwrap().split(',') {
-            client.join(name.to_owned()).unwrap();
-        }
+    if env::var("TWITCH_BOT_NAME").is_ok() {
+        client.join(env::var("TWITCH_BOT_NAME").unwrap()).unwrap();
     }
 
     let conn = &mut establish_connection();
