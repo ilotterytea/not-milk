@@ -1,11 +1,11 @@
 # NOT milk
 
-A silly minigame about drinking NOT milk.
-You can see the actual use of this source code on [Twitch](https://twitch.tv/ilotterytea) by simply writing `🥛 sip` in the chat room!
+A silly Twitch bot with a minigame about drinking NOT milk.
+A web server with a peepo frontend included!!!
 
 ## Features
 
-+ Drinking non-milk with a delay of 20 minutes *(be careful, you may get real milk)*.
++ Drinking non-milk *(be careful, you may get real milk 😱 )*.
 + Store for f█████ ████s that boost your stats in the game and in real life *(WIP)*.
 + 'Femboy Hooters' *(at an early stage of development)*.
 
@@ -28,16 +28,28 @@ cd not-milk
 
 ```env
 DATABASE_URL=database.db
-ACCESS_TOKEN=PUT_YOUR_TWITCH_ACCESS_TOKEN_HERE_FROM_YOUR_TWITCH_DEV_APPLICATION
+TWITCH_ACCESS_TOKEN=PUT_YOUR_TWITCH_ACCESS_TOKEN_HERE_FROM_YOUR_TWITCH_DEV_APPLICATION
+TWITCH_BOT_NAME=PUT_THE_NAME_OF_YOUR_BOT
+TWITCH_OAUTH2_TOKEN=PUT_THE_OAUTH2_TOKEN_OF_YOUR_BOT
+
+BOT_NAME=THE_TWITCH_USERNAME_OF_YOUR_BOT
+BOT_MAINTAINER=YOUR_TWITCH_USERNAME
+BOT_ICON_URL=THE_ICON_URL_OF_THE_BOT
+```
+
+*infrastructure/.env example:*
+```env
+DATABASE_URL=../database.db
 ```
 
 3. Finish the installation:
 
 ```bash
+cd infrastructure
 diesel setup
-cargo run
+cd ..
+
+cargo run -p twitch-bot #IF YOU ONLY WANT TO RUN THE BOT
+cargo run -p server #IF YOU ONLY WANT TO RUN THE WEBSERVER
 ```
 
-## Notes
-
-**The** `/api/v1/sip` **endpoint does not have any security**, so you have to set up authentication yourself using Nginx, Apache or another web server.
