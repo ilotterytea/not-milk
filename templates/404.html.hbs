@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{bot_name}} - User {{name}} not found!</title>
+        <link rel="favicon icon" href="../static/milk.png">
+        <link rel="stylesheet" href="../static/style.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="wrapper">
+                <div class="navbar">
+                    <div class="section brand">
+                        <a href="/"><img src="../static/milk.png"> NOT MILK</a>
+                    </div>
+                    <div class="section links">
+                        <a href="/leaderboard" class="button"><i class="fa-solid fa-chart-simple"></i> Leaderboard</a>
+                    </div>
+                    <div class="section searchbox">
+                        <form action="/search" method="get">
+                            <label for="query"><i class="fa-solid fa-magnifying-glass"></i></label>
+                            <input type="text" name="query" placeholder="Find user...">
+                        </form>
+                    </div>
+                </div>
+                <div class="page-content" style="justify-content:center;">
+                    
+                    <!-- features block -->
+                    <div class="block">
+                        <div class="block-info">
+                            <div class="summary">
+                                <h2>No user with the nickname "{{name}}" was found!</h2>
+                                <p><i>Maybe he should <span class="command inline" onclick="copy(this.innerHTML.trim());">🥛 sip</span> some milk and then he'll show up?</i></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript">
+        function format_timestamp(timestamp) {
+            timestamp = Math.round((Date.now() / 1000)) - timestamp;
+            let d = Math.round(timestamp / (60 * 60 * 24));
+            let h = Math.round(timestamp / (60 * 60) % 24);
+            let m = Math.round(timestamp % (60 * 60) / 60);
+            let s = Math.round(timestamp % 60);
+
+            if (d == 0 && h == 0 && m == 0) {
+                return `${s}s`;
+            } else if (d == 0 && h == 0) {
+                return `${m}m${s}s`;
+            } else if (d == 0) {
+                return `${h}h${s}s`;
+            } else {
+                return `${d}d${m}m`;
+            }
+        }
+
+        let dates = document.getElementsByClassName("date");
+        
+        for (let date of dates) {
+            date.innerHTML = format_timestamp(parseInt(date.innerHTML)) + " ago";
+        }
+
+        let counters = document.getElementsByClassName("count");
+
+        for (let count of counters) {
+            let c = parseInt(count.innerHTML);
+
+            if (c < 0) {
+                count.innerHTML = `<span class="negative">${c}</span>`;
+            } else if (c > 0) {
+                count.innerHTML = `<span class="positive">+${c}</span>`;
+            } else {
+                count.innerHTML = `<span class="neutral">${c}</span>`;
+            }
+        }
+    </script>
+    <script type="text/javascript">
+        function copy(text) {
+            navigator.clipboard.writeText(text);
+            alert('Successfully copied to your clipboard');
+        }
+    </script>
+</html>

@@ -1,0 +1,20 @@
+[package]
+name = "server"
+version.workspace = true
+authors.workspace = true
+description.workspace = true
+publish.workspace = true
+repository.workspace = true
+edition.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+infrastructure = { path = "../infrastructure" }
+diesel = { version = "2.0.3", features = ["sqlite", "returning_clauses_for_sqlite_3_35"] }
+dotenvy = "0.15.6"
+rand = "0.8.5"
+rocket = { version = "0.5.0-rc.2", features = ["json"] }
+rocket_dyn_templates = { version = "0.1.0-rc.2", features = ["handlebars"] }
+serde = { version = "1.0.156", features = ["derive"] }
+serde_json = "1.0.94"

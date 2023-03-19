@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>{{bot_name}} - Leaderboard</title>
+        <title>{{bot_name}} - Found {{length}} users by query '{{query}}'</title>
         <link rel="favicon icon" href="../static/milk.png">
         <link rel="stylesheet" href="../static/style.css">
     </head>
@@ -27,17 +27,15 @@
                     <div class="block found">
                         <div class="block-info">
                             <div class="summary">
-                                <h3>Top {{length}} best 'not milk' sippers 🥛 </h3>
+                                <h3>Found {{length}} users by query '{{query}}'</h3>
                                 <div class="list">
                                     {{#each users}}
-                                    <div class="item">
-                                        <p class="position">{{@index}}</p>
+                                    <a href="/user/{{this.0}}" class="item">
                                         <div class="icon">
                                             <img src="{{this.1}}">
                                         </div>
                                         <p class="name">{{this.0}}</p>
-                                        <p class="count">{{this.2}}</p>
-                                    </div>
+                                    </a>
                                     {{/each}}
                                 </div>
                             </div>
@@ -48,12 +46,6 @@
         </div>
     </body>
     <script type="text/javascript">
-        let positions = document.getElementsByClassName("position");
-
-        for (let pos of positions) {
-            pos.innerHTML = parseInt(pos.innerHTML) + 1;
-        }
-
         function copy(text) {
             navigator.clipboard.writeText(text);
             alert('Successfully copied to your clipboard');

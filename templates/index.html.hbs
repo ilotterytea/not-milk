@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{bot_name}} - I'm your 'not milk' supplier!</title>
+        <link rel="favicon icon" href="../static/milk.png">
+        <link rel="stylesheet" href="../static/style.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="wrapper">
+                <div class="navbar">
+                    <div class="section brand">
+                        <a href="/"><img src="../static/milk.png"> NOT MILK</a>
+                    </div>
+                    <div class="section links">
+                        <a href="/leaderboard" class="button"><i class="fa-solid fa-chart-simple"></i> Leaderboard</a>
+                    </div>
+                    <div class="section searchbox">
+                        <form action="/search" method="get">
+                            <label for="query"><i class="fa-solid fa-magnifying-glass"></i></label>
+                            <input type="text" name="query" placeholder="Find user...">
+                        </form>
+                    </div>
+                </div>
+                <div class="page-content" style="justify-content:center;">
+                    <!-- visit card -->
+                    {{#if bot_name}}
+                    {{#if bot_icon}}
+                    {{#if bot_maintainer}}
+                    <div class="block brand">
+                        <div class="block-info brand">
+                            <div class="icon">
+                                <img src="{{bot_icon}}">
+                            </div>
+                            <div class="summary">
+                                <p>
+                                    <a href="https://twitch.tv/{{bot_name}}">@{{bot_name}}</a> is a game bot
+                                    that supplies 'not milk' to your chat! Maintained by <a href="https://twitch.tv/{{bot_maintainer}}">@{{bot_maintainer}}</a>.
+                                </p>
+                                <p>type <span class="command inline" onclick="copy(this.innerHTML.trim());">🥛 join</span> into any chat room that has @{{bot_name}} if you want this bot. </p>
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+                    {{/if}}
+                    {{/if}}
+
+                    <!-- features block -->
+                    <div class="block features">
+                        <h1 class="block-title">Features</h1>
+
+                        <div class="block-list">
+                            <div class="block-info">
+                                <div class="summary">
+                                    <h2>'Not milk' game!</h2>
+                                    <p>
+                                        Collect 'not milk' glasses!
+                                        You can collect a random number of glasses of 'not milk' or you can steal from a random person.
+                                        But be careful, you might get stolen from you too!
+                                    </p>
+                                    <p>
+                                        To test yourself in 'not milk' game, use this command:
+                                        <div class="command" onclick="copy(this.innerHTML.trim());">
+                                            🥛 sip
+                                        </div>
+                                    </p>
+                                </div>
+                                <div class="icon">
+                                    <img src="https://cdn.7tv.app/emote/62073757591acf4392f570bc/4x.webp">
+                                </div>
+                            </div>
+
+                            <div class="block-info">
+                                <div class="summary">
+                                    <h2 class="title">Scoring and leaderboards</h2>
+                                    <p>
+                                        Know the best 'not milk' sippers with the command:
+                                        <div class="command" onclick="copy(this.innerHTML.trim());">
+                                            🥛 top
+                                        </div>
+                                    </p>
+                                    <p>
+                                        Do you want to know what position you are in? Use the command:
+                                        <div class="command" onclick="copy(this.innerHTML.trim());">
+                                            🥛 place
+                                        </div>
+                                    </p>
+                                </div>
+                                <div class="icon">
+                                    <img src="https://cdn.7tv.app/emote/61ad779c15b3ff4a5bb9a785/4x.webp">
+                                </div>
+                            </div>
+
+                            <div class="block-info">
+                                <div class="summary">
+                                    <h2 class="title">soon™...</h2>
+                                    <p>
+                                        The bot is at a very early stage of development, so there is very little function so far.
+                                        You can follow <a href="https://github.com/ilotterytea/not-milk">the development of the bot on GitHub.</a>
+                                    </p>
+                                </div>
+                                <div class="icon">
+                                    <img src="https://cdn.7tv.app/emote/62313510b1ac2f158885fb66/4x.webp">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript">
+        function copy(text) {
+            navigator.clipboard.writeText(text);
+            alert('Successfully copied to your clipboard');
+        }
+    </script>
+</html>
