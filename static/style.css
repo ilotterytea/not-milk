@@ -258,7 +258,6 @@ input {
 .item .date, .item .position {
     color: var(--border);
     font-weight: bold;
-    flex-grow: 1;
 }
 
 .item .name {

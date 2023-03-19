@@ -16,7 +16,8 @@ fn rocket() -> _ {
             routes![
                 routes::frontend::home,
                 routes::frontend::search,
-                routes::frontend::lookup_user
+                routes::frontend::lookup_user,
+                routes::frontend::leaderboard
             ],
         )
 }

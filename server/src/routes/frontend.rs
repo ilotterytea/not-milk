@@ -109,3 +109,33 @@ pub fn lookup_user(id: &str) -> Custom<Template> {
         ),
     )
 }
+
+#[get("/leaderboard")]
+pub fn leaderboard() -> Template {
+    let conn = &mut establish_connection();
+
+    let savegames = sg::savegames
+        .order(sg::points.desc())
+        .limit(50)
+        .load::<Savegame>(conn)
+        .expect("Couldn't load the savegames!");
+
+    let mut consumer_data: Vec<(String, String, i32)> = vec![];
+
+    for savegame in &savegames {
+        let c = cs::consumers
+            .find(savegame.consumer_id)
+            .first::<Consumer>(conn)
+            .expect("Couldn't get the consumer!");
+
+        consumer_data.push((c.alias_name, c.alias_pfp, savegame.points));
+    }
+
+    Template::render(
+        "leaderboard",
+        context! {
+            length: savegames.len(),
+            users: consumer_data
+        },
+    )
+}

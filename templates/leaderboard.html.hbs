@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>fembajbot - I'm your milk supplier!</title>
+        <link rel="stylesheet" href="../static/style.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="wrapper">
+                <div class="navbar">
+                    <div class="section brand">
+                        <a href="/"><img src="../static/milk.png"> NOT MILK</a>
+                    </div>
+                    <div class="section links">
+                        <a href="/leaderboard" class="button"><i class="fa-solid fa-chart-simple"></i> Leaderboard</a>
+                    </div>
+                    <div class="section searchbox">
+                        <form action="/search" method="get">
+                            <label for="query"><i class="fa-solid fa-magnifying-glass"></i></label>
+                            <input type="text" name="query" placeholder="Find user...">
+                        </form>
+                    </div>
+                </div>
+                <div class="page-content" style="justify-content:center;">
+                    
+                    <div class="block found">
+                        <div class="block-info">
+                            <div class="summary">
+                                <h3>Top {{length}} of the best milk sippers 🥛 </h3>
+                                <div class="list">
+                                    {{#each users}}
+                                    <div class="item">
+                                        <p class="position">{{@index}}</p>
+                                        <div class="icon">
+                                            <img src="{{this.1}}">
+                                        </div>
+                                        <p class="name">{{this.0}}</p>
+                                        <p class="count">{{this.2}}</p>
+                                    </div>
+                                    {{/each}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript">
+        let positions = document.getElementsByClassName("position");
+
+        for (let pos of positions) {
+            pos.innerHTML = parseInt(pos.innerHTML) + 1;
+        }
+
+        function copy(text) {
+            navigator.clipboard.writeText(text);
+            alert('Successfully copied to your clipboard');
+        }
+    </script>
+</html>
