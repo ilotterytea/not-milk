@@ -20,16 +20,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    lines (id) {
-        id -> Integer,
-        line -> Text,
-        category_id -> Integer,
-        channel_id -> Nullable<Integer>,
-        is_disabled -> Integer,
-    }
-}
-
-diesel::table! {
     points_history (id) {
         id -> Integer,
         consumer_id -> Integer,
@@ -56,13 +46,11 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(lines -> channels (channel_id));
 diesel::joinable!(suspensions -> channels (consumer_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     channels,
     consumers,
-    lines,
     points_history,
     savegames,
     suspensions,

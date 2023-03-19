@@ -67,23 +67,6 @@ pub struct NewChannel {
 }
 
 #[derive(Queryable)]
-pub struct Line {
-    pub id: i32,
-    pub line: String,
-    pub category_id: i32,
-    pub channel_id: Option<i32>,
-    pub is_deleted: i32,
-}
-
-#[derive(Insertable)]
-#[diesel(table_name = lines)]
-pub struct NewLine<'a> {
-    pub line: &'a str,
-    pub category_id: i32,
-    pub channel_id: Option<i32>,
-}
-
-#[derive(Queryable)]
 pub struct Suspension {
     pub consumer_id: i32,
     pub reason: Option<String>,
