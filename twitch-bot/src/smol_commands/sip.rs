@@ -1,18 +1,21 @@
-use std::{cmp::Ordering, env};
+use std::{cmp::Ordering, env, fs::File};
 
 use diesel::{delete, insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
 use infrastructure::{
     establish_connection,
     models::{Consumer, NewPointsHistory, NewSavegame, PointsHistory, Savegame, Suspension},
     schema::{
-        consumers::dsl as cs, lines::dsl as ln, points_history::dsl as ph, savegames::dsl as sg,
+        consumers::dsl as cs, points_history::dsl as ph, savegames::dsl as sg,
         suspensions::dsl as sus,
     },
 };
 
 use rand::Rng;
 
-use crate::utils::{humanize_timestamp_like_timer, sync_consumer};
+use crate::{
+    structs::Lines,
+    utils::{humanize_timestamp_like_timer, sync_consumer},
+};
 
 pub async fn run(user_id: &str) -> Option<String> {
     // Getting a 'Not milk' information about user from provided user_id:
@@ -170,28 +173,25 @@ pub async fn run(user_id: &str) -> Option<String> {
         }
         // Regular event:
         _ => {
-            let category_id = if percent > 75.0 {
-                3
+            let file = File::open("lines.json").unwrap();
+            let lines: Lines = serde_json::from_reader(file).unwrap();
+
+            let category = if percent > 75.0 {
+                &lines.legendary_lines
             } else if (50.0..75.0).contains(&percent) {
-                2
+                &lines.epic_lines
             } else if (25.0..50.0).contains(&percent) {
-                1
+                &lines.common_lines
             } else {
-                0
+                &lines.poor_lines
             };
 
-            let lines = ln::lines
-                .filter(ln::category_id.eq(category_id))
-                .select(ln::line)
-                .load::<String>(conn)
-                .expect("Couldn't load the lines!");
-
-            if lines.is_empty() {
+            if category.is_empty() {
                 "missingno".to_string()
             } else {
-                let index = rand::thread_rng().gen_range(0..lines.len());
+                let index = rand::thread_rng().gen_range(0..category.len());
 
-                lines.get(index).unwrap().to_owned()
+                category.get(index).unwrap().to_owned()
             }
         }
     };

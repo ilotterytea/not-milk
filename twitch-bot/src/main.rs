@@ -16,6 +16,7 @@ use twitch_irc::{
 
 mod handlers;
 mod smol_commands;
+mod structs;
 mod utils;
 
 #[tokio::main]
