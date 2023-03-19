@@ -25,6 +25,7 @@ pub fn home() -> Template {
 
 #[get("/search?<query>")]
 pub fn search(query: &str) -> Template {
+    dotenvy::dotenv().ok();
     let conn = &mut establish_connection();
 
     let consumers = cs::consumers
@@ -39,12 +40,14 @@ pub fn search(query: &str) -> Template {
             length: consumers.len(),
             query: query,
             users: consumers,
+            bot_name: env::var("BOT_NAME").expect("BOT_NAME must be set for frontend!"),
         },
     )
 }
 
 #[get("/user/<id>")]
 pub fn lookup_user(id: &str) -> Custom<Template> {
+    dotenvy::dotenv().ok();
     let conn = &mut establish_connection();
 
     let _consumer = cs::consumers
@@ -57,7 +60,8 @@ pub fn lookup_user(id: &str) -> Custom<Template> {
             Template::render(
                 "404",
                 context! {
-                    name: id
+                        name: id,
+                        bot_name: env::var("BOT_NAME").expect("BOT_NAME must be set for frontend!"),
                 },
             ),
         );
@@ -104,7 +108,8 @@ pub fn lookup_user(id: &str) -> Custom<Template> {
                 name: consumer.alias_name,
                 pfp: consumer.alias_pfp,
                 current: savegame.points,
-                activities: recent_activity
+                activities: recent_activity,
+                bot_name: env::var("BOT_NAME").expect("BOT_NAME must be set for frontend!"),
             },
         ),
     )
@@ -112,6 +117,7 @@ pub fn lookup_user(id: &str) -> Custom<Template> {
 
 #[get("/leaderboard")]
 pub fn leaderboard() -> Template {
+    dotenvy::dotenv().ok();
     let conn = &mut establish_connection();
 
     let savegames = sg::savegames
@@ -135,7 +141,8 @@ pub fn leaderboard() -> Template {
         "leaderboard",
         context! {
             length: savegames.len(),
-            users: consumer_data
+            users: consumer_data,
+            bot_name: env::var("BOT_NAME").expect("BOT_NAME must be set for frontend!"),
         },
     )
 }
