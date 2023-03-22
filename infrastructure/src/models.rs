@@ -82,3 +82,19 @@ pub struct NewSuspension<'a> {
     pub duration: i32,
     pub timestamp: i32,
 }
+
+#[derive(Queryable)]
+pub struct NonFungibleMilk {
+    pub id: i32,
+    pub consumer_id: i32,
+    pub hash_sum: String,
+    pub created_at: i32,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = non_fungible_milks)]
+pub struct NewNonFungibleMilk<'a> {
+    pub consumer_id: i32,
+    pub hash_sum: &'a str,
+    pub created_at: i32,
+}

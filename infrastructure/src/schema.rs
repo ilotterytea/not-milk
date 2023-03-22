@@ -20,6 +20,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    non_fungible_milks (id) {
+        id -> Integer,
+        consumer_id -> Integer,
+        hash_sum -> Text,
+        created_at -> Integer,
+    }
+}
+
+diesel::table! {
     points_history (id) {
         id -> Integer,
         consumer_id -> Integer,
@@ -46,11 +55,13 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(non_fungible_milks -> consumers (consumer_id));
 diesel::joinable!(suspensions -> channels (consumer_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     channels,
     consumers,
+    non_fungible_milks,
     points_history,
     savegames,
     suspensions,
