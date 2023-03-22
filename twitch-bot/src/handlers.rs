@@ -17,6 +17,7 @@ pub async fn irc_message_handler(
             "place" => smol_commands::place::run(message.sender.id.as_str()).await,
             "top" => smol_commands::top::run(),
             "join" => smol_commands::join::run(message.sender.id.as_str(), client).await,
+            "nfm" => smol_commands::nfm::run(message.sender.id.as_str()).await,
             _ => None,
         };
 
