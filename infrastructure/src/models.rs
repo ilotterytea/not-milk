@@ -1,7 +1,7 @@
 use crate::schema::*;
 use diesel::prelude::*;
 
-#[derive(Queryable)]
+#[derive(Queryable, Clone)]
 pub struct Consumer {
     pub id: i32,
     pub alias_id: i32,
