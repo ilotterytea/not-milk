@@ -6,6 +6,7 @@ use infrastructure::{
     models::{Consumer, NewConsumer, NewSavegame},
     schema::{consumers::dsl as cs, savegames::dsl as sg},
 };
+use substring::Substring;
 use twitch_api::{
     helix::users::GetUsersRequest,
     twitch_oauth2::{AccessToken, UserToken},
@@ -98,5 +99,44 @@ pub fn humanize_timestamp_like_timer(timestamp: i32) -> String {
         format!("{}h{}m", h, m)
     } else {
         format!("{}d{}h", d, h)
+    }
+}
+
+#[derive(Debug)]
+pub struct ParsedMessage {
+    pub command_id: String,
+    pub message: Option<String>,
+    pub raw_message: String,
+}
+
+impl ParsedMessage {
+    pub fn parse(message: &str, prefix: char) -> Option<Self> {
+        let mut s = if message.starts_with(&prefix.to_string()) {
+            message
+                .substring(1, message.len())
+                .trim()
+                .split(' ')
+                .collect::<Vec<&str>>()
+        } else {
+            return None;
+        };
+
+        let command_id = if s.first().is_some() {
+            <&str>::clone(s.first().unwrap())
+        } else {
+            return None;
+        };
+
+        s.remove(0);
+
+        Some(Self {
+            command_id: command_id.to_string(),
+            message: if s.is_empty() {
+                None
+            } else {
+                Some(s.join(" ").trim().to_string())
+            },
+            raw_message: message.to_string(),
+        })
     }
 }
