@@ -3,9 +3,11 @@ use std::{cmp::Ordering, env, fs::File};
 use diesel::{delete, insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
 use infrastructure::{
     establish_connection,
-    models::{Consumer, NewPointsHistory, NewSavegame, PointsHistory, Savegame, Suspension},
+    models::{
+        Consumer, NewAction, NewPointsHistory, NewSavegame, PointsHistory, Savegame, Suspension,
+    },
     schema::{
-        consumers::dsl as cs, points_history::dsl as ph, savegames::dsl as sg,
+        actions::dsl as act, consumers::dsl as cs, points_history::dsl as ph, savegames::dsl as sg,
         suspensions::dsl as sus,
     },
 };
@@ -14,13 +16,37 @@ use rand::Rng;
 
 use crate::{
     structs::Lines,
-    utils::{humanize_timestamp_like_timer, sync_consumer},
+    utils::{humanize_timestamp_like_timer, ParsedMessage},
 };
 
-pub async fn run(user_id: &str) -> Option<String> {
+pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
     // Getting a 'Not milk' information about user from provided user_id:
     let conn = &mut establish_connection();
-    let consumer = sync_consumer(user_id).await?;
+
+    let _latest_action_timestamp = act::actions
+        .filter(act::consumer_id.eq(consumer.id))
+        .filter(act::name.eq("sip"))
+        .select(act::created_at)
+        .order(act::created_at.desc())
+        .first::<i32>(conn);
+
+    if _latest_action_timestamp.is_ok() {
+        let latest_action_timestamp = _latest_action_timestamp.unwrap();
+        let difference =
+            i32::try_from(chrono::Utc::now().timestamp()).unwrap() - latest_action_timestamp;
+        let delay = std::env::var("SIP_DELAY_SEC")
+            .unwrap_or("1500".to_string())
+            .parse::<i32>()
+            .unwrap();
+
+        if difference < delay {
+            return Some(format!(
+                "{}: i am sorry, Master... but you have to wait {} for me to pour you a milk 🥛 ✋ ",
+                consumer.alias_name,
+                humanize_timestamp_like_timer(delay - difference)
+            ));
+        }
+    }
 
     let _suspension = sus::suspensions.find(consumer.id).first::<Suspension>(conn);
 
@@ -51,30 +77,6 @@ pub async fn run(user_id: &str) -> Option<String> {
                 } else {
                     format!("for {}", suspension.reason.unwrap())
                 }
-            ));
-        }
-    }
-
-    let histories = ph::points_history
-        .filter(ph::consumer_id.eq(consumer.id))
-        .order(ph::timestamp.desc())
-        .load::<PointsHistory>(conn)
-        .expect("Couldn't load activities!");
-
-    if !histories.is_empty() {
-        let latest = histories.first().unwrap();
-
-        let difference = i32::try_from(chrono::Utc::now().timestamp()).unwrap() - latest.timestamp;
-        let delay = env::var("INTERVAL_SEC")
-            .unwrap_or("3600".to_string())
-            .parse::<i32>()
-            .unwrap();
-
-        if difference < delay {
-            return Some(format!(
-                "{}: please wait! i need {} to make another milk for you 🫙  😣",
-                consumer.alias_name,
-                humanize_timestamp_like_timer(delay - difference)
             ));
         }
     }
@@ -205,6 +207,21 @@ pub async fn run(user_id: &str) -> Option<String> {
         .expect("Couldn't update the savegame");
 
     // Create a new activity:
+    insert_into(act::actions)
+        .values(vec![NewAction {
+            consumer_id: consumer.id,
+            name: "sip",
+            body: if msg_args.message.is_some() {
+                Some(msg_args.message.as_ref().unwrap().as_str())
+            } else {
+                None
+            },
+            raw: msg_args.raw_message.as_str(),
+            created_at: i32::try_from(chrono::Utc::now().timestamp()).unwrap(),
+        }])
+        .execute(conn)
+        .expect("Couldn't insert a new action!");
+
     insert_into(ph::points_history)
         .values(vec![NewPointsHistory {
             consumer_id: consumer.id,

@@ -3,8 +3,8 @@ use std::env;
 use diesel::{insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
 use infrastructure::{
     establish_connection,
-    models::{Channel, NewChannel},
-    schema::channels::dsl as ch,
+    models::{Channel, Consumer, NewAction, NewChannel},
+    schema::{actions::dsl as act, channels::dsl as ch},
 };
 use twitch_api::{
     helix::users::GetUsersRequest,
@@ -14,14 +14,17 @@ use twitch_api::{
 };
 use twitch_irc::{login::StaticLoginCredentials, SecureTCPTransport, TwitchIRCClient};
 
+use crate::utils::ParsedMessage;
+
 pub async fn run(
-    user_id: &str,
+    consumer: Consumer,
+    msg_args: &ParsedMessage,
     twitch_client: &TwitchIRCClient<SecureTCPTransport, StaticLoginCredentials>,
 ) -> Option<String> {
     let conn = &mut establish_connection();
 
     let channel = ch::channels
-        .filter(ch::alias_id.eq(user_id.parse::<i32>().unwrap()))
+        .filter(ch::alias_id.eq(consumer.alias_id))
         .first::<Channel>(conn);
 
     let client: TwitchClient<reqwest::Client> = TwitchClient::default();
@@ -41,7 +44,8 @@ pub async fn run(
         Err(e) => panic!("Got error: {}", e),
     };
 
-    let ids: &[&UserIdRef] = &[user_id.into()];
+    let _id = consumer.alias_id.to_string();
+    let ids: &[&UserIdRef] = &[_id.as_str().into()];
 
     let users = &client
         .helix
@@ -72,6 +76,21 @@ pub async fn run(
             user.login
         ));
     }
+
+    insert_into(act::actions)
+        .values(vec![NewAction {
+            consumer_id: consumer.id,
+            name: "join",
+            body: if msg_args.message.is_some() {
+                Some(msg_args.message.as_ref().unwrap().as_str())
+            } else {
+                None
+            },
+            raw: msg_args.raw_message.as_str(),
+            created_at: i32::try_from(chrono::Utc::now().timestamp()).unwrap(),
+        }])
+        .execute(conn)
+        .expect("Couldn't insert a new action!");
 
     insert_into(ch::channels)
         .values(vec![NewChannel {

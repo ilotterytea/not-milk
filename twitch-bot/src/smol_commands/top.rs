@@ -1,12 +1,39 @@
-use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{insert_into, ExpressionMethods, QueryDsl, RunQueryDsl};
 use infrastructure::{
     establish_connection,
-    models::{Consumer, Savegame},
-    schema::{consumers::dsl as cs, savegames::dsl as sg},
+    models::{Consumer, NewAction, Savegame},
+    schema::{actions::dsl as act, consumers::dsl as cs, savegames::dsl as sg},
 };
 
-pub fn run() -> Option<String> {
+use crate::utils::{humanize_timestamp_like_timer, ParsedMessage};
+
+pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
     let conn = &mut establish_connection();
+
+    let _latest_action_timestamp = act::actions
+        .filter(act::consumer_id.eq(consumer.id))
+        .filter(act::name.eq("top"))
+        .select(act::created_at)
+        .order(act::created_at.desc())
+        .first::<i32>(conn);
+
+    if _latest_action_timestamp.is_ok() {
+        let latest_action_timestamp = _latest_action_timestamp.unwrap();
+        let difference =
+            i32::try_from(chrono::Utc::now().timestamp()).unwrap() - latest_action_timestamp;
+        let delay = std::env::var("TOP_DELAY_SEC")
+            .unwrap_or("60".to_string())
+            .parse::<i32>()
+            .unwrap();
+
+        if difference < delay {
+            return Some(format!(
+                "{}: i am sorry, Master... but you have to wait {} for me to show you the leaderboard 🥛 ✋ ",
+                consumer.alias_name,
+                humanize_timestamp_like_timer(delay - difference)
+            ));
+        }
+    }
 
     let savegames = sg::savegames
         .order(sg::points.desc())
@@ -38,6 +65,21 @@ pub fn run() -> Option<String> {
             savegame.points
         ));
     }
+
+    insert_into(act::actions)
+        .values(vec![NewAction {
+            consumer_id: consumer.id,
+            name: "top",
+            body: if msg_args.message.is_some() {
+                Some(msg_args.message.as_ref().unwrap().as_str())
+            } else {
+                None
+            },
+            raw: msg_args.raw_message.as_str(),
+            created_at: i32::try_from(chrono::Utc::now().timestamp()).unwrap(),
+        }])
+        .execute(conn)
+        .expect("Couldn't insert a new action!");
 
     Some(format!(
         "🥛 🏆 top {} milk sippers: {}",

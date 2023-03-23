@@ -4,17 +4,41 @@ use diesel::{insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
 use image::{GenericImageView, ImageBuffer, Rgba, RgbaImage};
 use infrastructure::{
     establish_connection,
-    models::{NewNonFungibleMilk, NonFungibleMilk, Savegame},
-    schema::{non_fungible_milks::dsl as nfm, savegames::dsl as sg},
+    models::{Consumer, NewAction, NewNonFungibleMilk, NonFungibleMilk, Savegame},
+    schema::{actions::dsl as act, non_fungible_milks::dsl as nfm, savegames::dsl as sg},
 };
 use rand::Rng;
 use sha2::{Digest, Sha256};
 
-use crate::utils::sync_consumer;
+use crate::utils::{humanize_timestamp_like_timer, ParsedMessage};
 
-pub async fn run(user_id: &str) -> Option<String> {
-    let consumer = sync_consumer(user_id).await?;
+pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
     let conn = &mut establish_connection();
+
+    let _latest_action_timestamp = act::actions
+        .filter(act::consumer_id.eq(consumer.id))
+        .filter(act::name.eq("nfm"))
+        .select(act::created_at)
+        .order(act::created_at.desc())
+        .first::<i32>(conn);
+
+    if _latest_action_timestamp.is_ok() {
+        let latest_action_timestamp = _latest_action_timestamp.unwrap();
+        let difference =
+            i32::try_from(chrono::Utc::now().timestamp()).unwrap() - latest_action_timestamp;
+        let delay = std::env::var("NFM_DELAY_SEC")
+            .unwrap_or("300".to_string())
+            .parse::<i32>()
+            .unwrap();
+
+        if difference < delay {
+            return Some(format!(
+                "{}: i am sorry, Master... but you have to wait {} for me to do NFM for u 🥛 ✋ ",
+                consumer.alias_name,
+                humanize_timestamp_like_timer(delay - difference)
+            ));
+        }
+    }
     let mut savegame = sg::savegames
         .find(consumer.id)
         .first::<Savegame>(conn)
@@ -124,6 +148,21 @@ pub async fn run(user_id: &str) -> Option<String> {
 
         out.put_pixel(pixel.0, pixel.1, pixel.2);
     }
+
+    insert_into(act::actions)
+        .values(vec![NewAction {
+            consumer_id: consumer.id,
+            name: "nfm",
+            body: if msg_args.message.is_some() {
+                Some(msg_args.message.as_ref().unwrap().as_str())
+            } else {
+                None
+            },
+            raw: msg_args.raw_message.as_str(),
+            created_at: i32::try_from(chrono::Utc::now().timestamp()).unwrap(),
+        }])
+        .execute(conn)
+        .expect("Couldn't insert a new action!");
 
     insert_into(nfm::non_fungible_milks)
         .values(vec![NewNonFungibleMilk {
