@@ -144,5 +144,5 @@ pub async fn run(user_id: &str) -> Option<String> {
     create_dir_all("static/nfms").unwrap();
     out.save(format!("static/nfms/{}.png", &hash)).unwrap();
 
-    Some(format!("{}: here's your UNIQUE generated NFM 🦇 🌰  👉  {}/nfms/{}.png ... keep it a secret, cuz someone will want to take a screenshot of it 🤫 ", consumer.alias_name, env::var("BASE_URL").expect("BASE_URL must be set for NFM command!"), hash))
+    Some(format!("{}: here's your UNIQUE generated NFM 🦇 🌰  👉  {}/static/nfms/{}.png ... keep it a secret, cuz someone will want to take a screenshot of it 🤫 ", consumer.alias_name, env::var("BASE_URL").expect("BASE_URL must be set for NFM command!"), hash))
 }
