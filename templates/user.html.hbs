@@ -40,6 +40,23 @@
                     <div class="block">
                         <div class="block-info">
                             <div class="summary">
+                                <h3>Created NFMs</h3>
+                                <div class="list horizontal">
+                                    {{#each nfms}}
+                                        <div class="item-icon">
+                                            <img src="../static/nfms/{{this}}.png" class="icon">
+                                        </div>
+                                    {{else}}
+                                        <p>No NFMs.</p>
+                                    {{/each}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="block">
+                        <div class="block-info">
+                            <div class="summary">
                                 <h3>'Not milk' drinking activity</h3>
                                 <div class="list">
                                     {{#each activities}}

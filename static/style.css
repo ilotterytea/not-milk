@@ -189,6 +189,7 @@ input {
 /* Block info summary. */
 .block-info .summary {
     flex-grow: 1;
+    width: 100%;
     margin: 16px;
 }
 
@@ -245,6 +246,13 @@ input {
     max-height: 360px;
 }
 
+.list.horizontal {
+    max-width: 100%;
+    flex-direction: row;
+    overflow-y: unset;
+    overflow-x: scroll;
+}
+
 /* Item. */
 .item {
     width: 100%;
@@ -253,6 +261,11 @@ input {
     display: flex;
     flex-direction: row;
     align-items: center;
+}
+
+.item-icon {
+    border: var(--border) solid 1px;
+    margin: 6px;
 }
 
 .item .date, .item .position {

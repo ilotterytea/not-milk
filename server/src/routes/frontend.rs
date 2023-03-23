@@ -4,7 +4,10 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use infrastructure::{
     establish_connection,
     models::{Consumer, PointsHistory, Savegame},
-    schema::{consumers::dsl as cs, points_history::dsl as ph, savegames::dsl as sg},
+    schema::{
+        consumers::dsl as cs, non_fungible_milks::dsl as nfm, points_history::dsl as ph,
+        savegames::dsl as sg,
+    },
 };
 use rocket::{http::Status, response::status::Custom};
 use rocket_dyn_templates::{context, Template};
@@ -100,6 +103,12 @@ pub fn lookup_user(id: &str) -> Custom<Template> {
         ));
     }
 
+    let nfms = nfm::non_fungible_milks
+        .filter(nfm::consumer_id.eq(consumer.id))
+        .select(nfm::hash_sum)
+        .load::<String>(conn)
+        .expect("Couldn't load the NFMs");
+
     Custom(
         rocket::http::Status::Ok,
         Template::render(
@@ -109,6 +118,7 @@ pub fn lookup_user(id: &str) -> Custom<Template> {
                 pfp: consumer.alias_pfp,
                 current: savegame.points,
                 activities: recent_activity,
+                nfms,
                 bot_name: env::var("BOT_NAME").expect("BOT_NAME must be set for frontend!"),
             },
         ),
