@@ -1,4 +1,5 @@
 #![feature(exclusive_range_pattern)]
+extern crate image;
 use diesel::{QueryDsl, RunQueryDsl};
 use dotenvy::dotenv;
 use infrastructure::establish_connection;
