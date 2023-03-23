@@ -89,14 +89,11 @@ pub async fn run(user_id: &str) -> Option<String> {
             255
         );
 
-        println!("{}", &hash_raw);
         let mut hasher = Sha256::new();
 
         hasher.update(hash_raw);
 
         hash = format!("{:X}", hasher.finalize()).to_lowercase();
-
-        println!("{}", &hash);
 
         let _milk = nfm::non_fungible_milks
             .filter(nfm::hash_sum.eq(&hash))
