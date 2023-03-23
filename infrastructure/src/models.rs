@@ -98,3 +98,23 @@ pub struct NewNonFungibleMilk<'a> {
     pub hash_sum: &'a str,
     pub created_at: i32,
 }
+
+#[derive(Queryable)]
+pub struct Action {
+    pub id: i32,
+    pub consumer_id: i32,
+    pub name: String,
+    pub body: Option<String>,
+    pub raw: String,
+    pub created_at: i32,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = actions)]
+pub struct NewAction<'a> {
+    pub consumer_id: i32,
+    pub name: &'a str,
+    pub body: Option<&'a str>,
+    pub raw: &'a str,
+    pub created_at: i32,
+}

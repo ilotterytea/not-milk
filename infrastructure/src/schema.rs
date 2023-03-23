@@ -1,6 +1,17 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    actions (id) {
+        id -> Integer,
+        consumer_id -> Integer,
+        name -> Text,
+        body -> Nullable<Text>,
+        raw -> Text,
+        created_at -> Integer,
+    }
+}
+
+diesel::table! {
     channels (id) {
         id -> Integer,
         alias_id -> Integer,
@@ -55,10 +66,12 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(actions -> consumers (consumer_id));
 diesel::joinable!(non_fungible_milks -> consumers (consumer_id));
 diesel::joinable!(suspensions -> channels (consumer_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    actions,
     channels,
     consumers,
     non_fungible_milks,
