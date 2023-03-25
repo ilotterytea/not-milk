@@ -21,7 +21,7 @@ pub async fn irc_message_handler(
         let consumer = sync_consumer(message.sender.id.as_str()).await.unwrap();
 
         let msg: Option<String> = match msg_args.command_id.as_str() {
-            "sip" => smol_commands::sip::run(consumer, msg_args).await,
+            "sip" => smol_commands::sip::run(consumer, msg_args),
             "place" => smol_commands::place::run(consumer, msg_args).await,
             "top" => smol_commands::top::run(consumer, msg_args),
             "join" => smol_commands::join::run(consumer, msg_args, client).await,

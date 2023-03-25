@@ -3,9 +3,7 @@ use std::{cmp::Ordering, env, fs::File};
 use diesel::{delete, insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
 use infrastructure::{
     establish_connection,
-    models::{
-        Consumer, NewAction, NewPointsHistory, NewSavegame, PointsHistory, Savegame, Suspension,
-    },
+    models::{Consumer, NewAction, NewPointsHistory, NewSavegame, Savegame, Suspension},
     schema::{
         actions::dsl as act, consumers::dsl as cs, points_history::dsl as ph, savegames::dsl as sg,
         suspensions::dsl as sus,
@@ -19,7 +17,7 @@ use crate::{
     utils::{humanize_timestamp_like_timer, ParsedMessage},
 };
 
-pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
+pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
     // Getting a 'Not milk' information about user from provided user_id:
     let conn = &mut establish_connection();
 
@@ -30,10 +28,9 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
         .order(act::created_at.desc())
         .first::<i32>(conn);
 
-    if _latest_action_timestamp.is_ok() {
-        let latest_action_timestamp = _latest_action_timestamp.unwrap();
+    if let Ok(_latest_action_timestamp) = _latest_action_timestamp {
         let difference =
-            i32::try_from(chrono::Utc::now().timestamp()).unwrap() - latest_action_timestamp;
+            i32::try_from(chrono::Utc::now().timestamp()).unwrap() - _latest_action_timestamp;
         let delay = std::env::var("SIP_DELAY_SEC")
             .unwrap_or("1500".to_string())
             .parse::<i32>()
@@ -48,11 +45,9 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
         }
     }
 
-    let _suspension = sus::suspensions.find(consumer.id).first::<Suspension>(conn);
+    let suspension = sus::suspensions.find(consumer.id).first::<Suspension>(conn);
 
-    if _suspension.is_ok() {
-        let suspension = _suspension.unwrap();
-
+    if let Ok(suspension) = suspension {
         let passed_time =
             i32::try_from(chrono::Utc::now().timestamp()).unwrap() - suspension.timestamp;
 
@@ -112,16 +107,16 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
         .unwrap();
 
     let fun = rand::thread_rng().gen_range(0..100);
-    let mut points = rand::thread_rng().gen_range(min..max);
-    let mut percent = (points as f64 / max as f64) * 100.0;
+    let points: i32;
+    let message: String;
 
-    let message = match fun {
-        // very very negative event:
+    match fun {
+        // super negative event:
         0 => {
-            points = rand::thread_rng().gen_range(-99..-50);
-            "you were cursed with an intolerance to my milk 🥛😭".to_string()
+            points = -99;
+            message = "you were cursed with an intolerance to my milk 🥛 😭 ".to_string();
         }
-        // Steal from random consumer:
+        // steal from random consumer
         (1..10) => {
             let mut savegames = sg::savegames
                 .filter(sg::consumer_id.ne(savegame.consumer_id))
@@ -155,8 +150,8 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
                 .execute(conn)
                 .expect("Couldn't create a new activity record!");
 
-            percent = (points as f64 / max as f64) * 100.0;
-            format!(
+            let percent = (points as f64 / max as f64) * 100.0;
+            message = format!(
                 "you didn't get your portion of milk, but you {} {} {}",
                 if percent >= 50.0 {
                     "rudely took"
@@ -171,32 +166,53 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
                 } else {
                     "to pour you 'not milk', and he agreed 🥛😊"
                 }
-            )
+            );
         }
-        // Regular event:
-        _ => {
+        // found something +.
+        (11..25) => {
+            points = rand::thread_rng().gen_range(1..max);
+            let percent = (points as f32 / max as f32) * 100.0;
+
             let file = File::open("lines.json").unwrap();
             let lines: Lines = serde_json::from_reader(file).unwrap();
 
             let category = if percent > 75.0 {
                 &lines.legendary_lines
-            } else if (50.0..75.0).contains(&percent) {
+            } else if (45.0..75.0).contains(&percent) {
                 &lines.epic_lines
-            } else if (25.0..50.0).contains(&percent) {
-                &lines.common_lines
             } else {
-                &lines.poor_lines
+                &lines.common_lines
             };
 
             if category.is_empty() {
-                "missingno".to_string()
+                message = "missingno".to_string();
             } else {
                 let index = rand::thread_rng().gen_range(0..category.len());
-
-                category.get(index).unwrap().to_owned()
+                message = category.get(index).unwrap().to_string();
             }
         }
-    };
+        // found something -.
+        (26..50) => {
+            points = rand::thread_rng().gen_range(min..-1);
+
+            let file = File::open("lines.json").unwrap();
+            let lines: Lines = serde_json::from_reader(file).unwrap();
+
+            let category = &lines.poor_lines;
+
+            if category.is_empty() {
+                message = "missingno".to_string();
+            } else {
+                let index = rand::thread_rng().gen_range(0..category.len());
+                message = category.get(index).unwrap().to_string();
+            }
+        }
+        // nothing found.
+        _ => {
+            points = 0;
+            message = "nothing found...".to_string();
+        }
+    }
 
     // Update the sender's points:
     savegame.points += points;
@@ -247,6 +263,10 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
         .iter()
         .position(|p| p.consumer_id.eq(&consumer.id))
         .unwrap();
+
+    if points == 0 {
+        return Some(format!("{}: {} ...", consumer.alias_name, message));
+    }
 
     Some(format!(
         "{}: {} ... anyways you got {} | total: {} 🥛{}",
