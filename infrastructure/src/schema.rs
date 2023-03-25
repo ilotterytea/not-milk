@@ -36,6 +36,8 @@ diesel::table! {
         consumer_id -> Integer,
         hash_sum -> Text,
         created_at -> Integer,
+        sold -> Integer,
+        rarity -> Integer,
     }
 }
 

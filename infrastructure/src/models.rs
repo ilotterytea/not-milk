@@ -89,6 +89,8 @@ pub struct NonFungibleMilk {
     pub consumer_id: i32,
     pub hash_sum: String,
     pub created_at: i32,
+    pub sold: i32,
+    pub rarity: i32,
 }
 
 #[derive(Insertable)]
@@ -96,6 +98,7 @@ pub struct NonFungibleMilk {
 pub struct NewNonFungibleMilk<'a> {
     pub consumer_id: i32,
     pub hash_sum: &'a str,
+    pub rarity: i32,
     pub created_at: i32,
 }
 
