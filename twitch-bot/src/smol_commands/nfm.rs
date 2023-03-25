@@ -66,6 +66,7 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
     let mut fg2: (i16, i16, i16);
     let mut outline: (i16, i16, i16);
     let mut hash: String;
+    let mut rarity: i32;
 
     loop {
         bg = (
@@ -119,6 +120,14 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
 
         hash = format!("{:X}", hasher.finalize()).to_lowercase();
 
+        rarity = 0;
+
+        for c in hash.chars() {
+            if c.is_ascii_digit() {
+                rarity += 1;
+            }
+        }
+
         let _milk = nfm::non_fungible_milks
             .filter(nfm::hash_sum.eq(&hash))
             .first::<NonFungibleMilk>(conn);
@@ -168,6 +177,7 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
         .values(vec![NewNonFungibleMilk {
             consumer_id: consumer.id,
             hash_sum: hash.as_str(),
+            rarity,
             created_at: i32::try_from(chrono::Utc::now().timestamp()).unwrap(),
         }])
         .execute(conn)
@@ -183,5 +193,21 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
     create_dir_all("static/nfms").unwrap();
     out.save(format!("static/nfms/{}.png", &hash)).unwrap();
 
-    Some(format!("{}: here's your UNIQUE generated NFM 🦇 🌰  👉  {}/static/nfms/{}.png ... keep it a secret, cuz someone will want to take a screenshot of it 🤫 ", consumer.alias_name, env::var("BASE_URL").expect("BASE_URL must be set for NFM command!"), hash))
+    let rarity_percent = (rarity as f32 / hash.len() as f32) * 100.0;
+
+    Some(format!("{}: here's your UNIQUE generated {} NFM 🦇 🌰  👉  {}/static/nfms/{}.png ... keep it a secret, cuz someone will want to take a screenshot of it 🤫 ",
+                 consumer.alias_name,
+                 if rarity_percent >= 80.0 {
+                     "LEGENDARY"
+                 } else if (70.0..80.0).contains(&rarity_percent) {
+                     "Epic"
+                 } else if (60.0..70.0).contains(&rarity_percent) {
+                     "Rare"
+                 } else {
+                     "common"
+                 },
+                 env::var("BASE_URL").expect("BASE_URL must be set for NFM command!"),
+                 hash
+                 )
+         )
 }
