@@ -27,6 +27,7 @@ pub async fn irc_message_handler(
             "join" => smol_commands::join::run(consumer, msg_args, client).await,
             "nfm" => smol_commands::nfm::run(consumer, msg_args).await,
             "yoink" | "suck" | "pump" => smol_commands::yoink::run(consumer, msg_args).await,
+            "sellnfm" => smol_commands::sellnfm::run(consumer, msg_args),
             _ => None,
         };
 
