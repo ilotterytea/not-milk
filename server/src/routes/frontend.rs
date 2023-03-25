@@ -105,8 +105,9 @@ pub fn lookup_user(id: &str) -> Custom<Template> {
 
     let nfms = nfm::non_fungible_milks
         .filter(nfm::consumer_id.eq(consumer.id))
-        .select(nfm::hash_sum)
-        .load::<String>(conn)
+        .filter(nfm::sold.ne(1))
+        .select((nfm::hash_sum, nfm::id))
+        .load::<(String, i32)>(conn)
         .expect("Couldn't load the NFMs");
 
     Custom(

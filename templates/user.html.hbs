@@ -44,7 +44,10 @@
                                 <div class="list horizontal">
                                     {{#each nfms}}
                                         <div class="item-icon">
-                                            <img src="../static/nfms/{{this}}.png" class="icon">
+                                            <img src="../static/nfms/{{this.0}}.png" class="icon">
+                                            <div class="summary">
+                                                <p id="id">ID: {{this.1}}</p>
+                                            </div>
                                         </div>
                                     {{else}}
                                         <p>No NFMs.</p>
