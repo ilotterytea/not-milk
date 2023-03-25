@@ -9,6 +9,7 @@ use infrastructure::{
         savegames::dsl as sg,
     },
 };
+use rand::Rng;
 use rocket::{http::Status, response::status::Custom};
 use rocket_dyn_templates::{context, Template};
 
@@ -21,7 +22,15 @@ pub fn home() -> Template {
         context! {
             bot_name: env::var("BOT_NAME").expect("BOT_NAME must be set for frontend!"),
             bot_maintainer: env::var("BOT_MAINTAINER").expect("BOT_MAINTAINER must be set for frontend!"),
-            bot_icon: env::var("BOT_ICON_URL").expect("BOT_ICON_URL must be set for frontend!")
+            bot_icon: env::var("BOT_ICON_URL").expect("BOT_ICON_URL must be set for frontend!"),
+            rate: env::var("NFM_DELTA")
+        .unwrap_or_else(|_| {
+            let c = ((rand::thread_rng().gen_range(-1.0..100.0)) / 10000.0).to_string();
+            env::set_var("NFM_DELTA", &c);
+            c
+        })
+        .parse::<f32>()
+        .unwrap(),
         },
     )
 }
