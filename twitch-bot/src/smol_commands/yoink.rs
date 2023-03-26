@@ -62,6 +62,13 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
         all_consumers.get(index).cloned().unwrap()
     };
 
+    if target_consumer.id.eq(&consumer.id) {
+        return Some(format!(
+            "{}: i'm sorry, but you are not flexible enough to pump the 🥛 out of yourself bruh",
+            consumer.alias_name
+        ));
+    }
+
     let mut target_savegame = sg::savegames
         .find(target_consumer.id)
         .first::<Savegame>(conn)

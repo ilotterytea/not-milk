@@ -93,6 +93,13 @@ pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
 
     let target_consumer = _target_consumer.unwrap();
 
+    if target_consumer.id.eq(&consumer.id) {
+        return Some(format!(
+            "{}: ok what's the point of giving 🥛 to yourself?",
+            consumer.alias_name
+        ));
+    }
+
     let mut target_savegame = sg::savegames
         .find(target_consumer.id)
         .first::<Savegame>(conn)
