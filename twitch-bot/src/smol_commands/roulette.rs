@@ -1,17 +1,42 @@
 use std::env;
 
-use diesel::{update, ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{insert_into, update, ExpressionMethods, QueryDsl, RunQueryDsl};
 use infrastructure::{
     establish_connection,
-    models::{Consumer, Savegame},
-    schema::savegames::dsl as sg,
+    models::{Consumer, NewAction, Savegame},
+    schema::{actions::dsl as act, savegames::dsl as sg},
 };
 use rand::Rng;
 use substring::Substring;
 
-use crate::utils::ParsedMessage;
+use crate::utils::{humanize_timestamp_like_timer, ParsedMessage};
 
 pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
+    let conn = &mut establish_connection();
+    let _latest_action_timestamp = act::actions
+        .filter(act::consumer_id.eq(consumer.id))
+        .filter(act::name.eq("roulette"))
+        .select(act::created_at)
+        .order(act::created_at.desc())
+        .first::<i32>(conn);
+
+    if let Ok(_latest_action_timestamp) = _latest_action_timestamp {
+        let difference =
+            i32::try_from(chrono::Utc::now().timestamp()).unwrap() - _latest_action_timestamp;
+        let delay = std::env::var("ROULETTE_DELAY_SEC")
+            .unwrap_or("60".to_string())
+            .parse::<i32>()
+            .unwrap();
+
+        if difference < delay {
+            return Some(format!(
+                "{}: i am sorry, Master... but you have to wait {} for me 🥛 ✋ ",
+                consumer.alias_name,
+                humanize_timestamp_like_timer(delay - difference)
+            ));
+        }
+    }
+
     if msg_args.message.is_none() {
         return Some(format!(
             "{}: no percent or number is given!",
@@ -21,7 +46,6 @@ pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
     let msg = msg_args.message.as_ref().unwrap();
 
     let percent = msg.ends_with('%');
-    let conn = &mut establish_connection();
     let mut savegame = sg::savegames
         .find(consumer.id)
         .first::<Savegame>(conn)
@@ -92,6 +116,21 @@ pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
         .set(sg::points.eq(savegame.points))
         .execute(conn)
         .expect("Couldn't update the savegame!");
+
+    insert_into(act::actions)
+        .values(vec![NewAction {
+            consumer_id: consumer.id,
+            name: "roulette",
+            body: if msg_args.message.is_some() {
+                Some(msg_args.message.as_ref().unwrap().as_str())
+            } else {
+                None
+            },
+            raw: msg_args.raw_message.as_str(),
+            created_at: i32::try_from(chrono::Utc::now().timestamp()).unwrap(),
+        }])
+        .execute(conn)
+        .expect("Couldn't insert a new action!");
 
     Some(format!(
         "{}: you {} {} 🥛 {}",
