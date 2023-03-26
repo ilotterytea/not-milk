@@ -10,15 +10,14 @@ use crate::utils::{humanize_timestamp_like_timer, ParsedMessage};
 pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
     let conn = &mut establish_connection();
 
-    let _latest_action_timestamp = act::actions
+    let latest_action_timestamp = act::actions
         .filter(act::consumer_id.eq(consumer.id))
         .filter(act::name.eq("top"))
         .select(act::created_at)
         .order(act::created_at.desc())
         .first::<i32>(conn);
 
-    if _latest_action_timestamp.is_ok() {
-        let latest_action_timestamp = _latest_action_timestamp.unwrap();
+    if let Ok(latest_action_timestamp) = latest_action_timestamp {
         let difference =
             i32::try_from(chrono::Utc::now().timestamp()).unwrap() - latest_action_timestamp;
         let delay = std::env::var("TOP_DELAY_SEC")
