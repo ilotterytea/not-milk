@@ -169,7 +169,7 @@ pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
             );
         }
         // found something +.
-        (11..50) => {
+        (11..70) => {
             points = rand::thread_rng().gen_range(1..max);
             let percent = (points as f32 / max as f32) * 100.0;
 
@@ -192,7 +192,7 @@ pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
             }
         }
         // found something -.
-        (51..80) => {
+        (71..80) => {
             points = rand::thread_rng().gen_range(min..-1);
 
             let file = File::open("lines.json").unwrap();
