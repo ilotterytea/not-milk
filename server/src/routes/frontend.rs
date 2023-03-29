@@ -1,3 +1,4 @@
+use regex::Regex;
 use std::env;
 
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
@@ -40,11 +41,19 @@ pub fn search(query: &str) -> Template {
     dotenvy::dotenv().ok();
     let conn = &mut establish_connection();
 
-    let consumers = cs::consumers
-        .filter(cs::alias_name.eq(query))
+    let all_consumers = cs::consumers
         .select((cs::alias_name, cs::alias_pfp))
         .load::<(String, String)>(conn)
         .expect("Couldn't load the consumers!");
+
+    let mut consumers: Vec<&(String, String)> = vec![];
+    let matcher = Regex::new(format!(r"(?i){}", query).as_str()).unwrap();
+
+    for consumer in &all_consumers {
+        if matcher.is_match(consumer.0.as_str()) {
+            consumers.push(consumer);
+        }
+    }
 
     Template::render(
         "search",
