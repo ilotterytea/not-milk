@@ -47,7 +47,7 @@ pub fn search(query: &str) -> Template {
         .expect("Couldn't load the consumers!");
 
     let mut consumers: Vec<&(String, String)> = vec![];
-    let matcher = Regex::new(format!(r"(?i){}", query).as_str()).unwrap();
+    let matcher = Regex::new(format!(r"(?i){}", query.trim()).as_str()).unwrap();
 
     for consumer in &all_consumers {
         if matcher.is_match(consumer.0.as_str()) {
