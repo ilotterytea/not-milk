@@ -29,13 +29,13 @@
                             <div class="summary">
                                 <h3>Top {{length}} best 'not milk' sippers 🥛 </h3>
                                 <div class="list">
-                                    {{#each users}}
+                                    <a{{#each users}}
                                     <div class="item">
                                         <p class="position">{{@index}}</p>
                                         <div class="icon">
                                             <img src="{{this.1}}">
                                         </div>
-                                        <p class="name">{{this.0}}</p>
+                                        <a class="name" href="https://fem.ilotterytea.kz/user/{{this.0}}">{{this.0}}</a>
                                         <p class="count">{{this.2}}</p>
                                     </div>
                                     {{/each}}
