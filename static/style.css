@@ -282,6 +282,10 @@ input {
     flex-grow: 2;
 }
 
+a.name {
+    margin-left: 5px;
+}
+
 .item .icon {
     padding: 0;
     margin: 0;
