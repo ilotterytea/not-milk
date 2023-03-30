@@ -136,6 +136,10 @@ input {
     border: none;
 }
 
+#leader-icon{
+    margin-right: 3px;
+}
+
 /* Navbar search box. */
 .navbar .searchbox form {
     display: flex;
