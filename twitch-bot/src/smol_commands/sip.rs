@@ -38,7 +38,7 @@ pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
 
         if difference < delay {
             return Some(format!(
-                "{}: i am sorry, Master... but you have to wait {} for me to pour you a milk 🥛 ✋ ",
+                "{}: MOOO MOO MOOOO {} MUH MO 🥛 ✋ ",
                 consumer.alias_name,
                 humanize_timestamp_like_timer(delay - difference)
             ));
@@ -106,7 +106,8 @@ pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
         .parse::<i32>()
         .unwrap();
 
-    let fun = rand::thread_rng().gen_range(0..100);
+    //let fun = rand::thread_rng().gen_range(0..100);
+    let fun = 50;
     let points: i32;
     let message: String;
 
@@ -268,32 +269,29 @@ pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
         return Some(format!("{}: {} ...", consumer.alias_name, message));
     }
 
+    let mut message2 = String::new();
+
+    for _ in 0..rand::thread_rng().gen_range(1..20) {
+        let m = match rand::thread_rng().gen_range(0..4) {
+            0 => "moo",
+            1 => "mu",
+            2 => "mooooo",
+            3 => "muh",
+            _ => "mo",
+        };
+
+        message2.push_str(m);
+    }
+
     Some(format!(
-        "{}: {} ... anyways you got {} | total: {} 🥛{}",
+        "{}: {} ... moooo mu moo {} | moo moo: {} 🥛",
         consumer.alias_name,
-        message,
+        message2,
         if points > 0 {
             format!("+{}", points)
         } else {
             points.to_string()
         },
-        savegame.points,
-        match position_now.cmp(&position_then) {
-            Ordering::Less =>
-                format!(
-                "| forsenLevel ⬆  you have leveled up from #{} place to #{} place in the top of {} sippers!!!",
-                position_then + 1,
-                position_now + 1,
-                savegames_now.len()
-            ),
-            Ordering::Greater =>
-                format!(
-                "| forsenLevel ⬇  you lowered from #{} place to #{} place in the top of {} sippers...epic fai.l",
-                position_then + 1,
-                position_now + 1,
-                savegames_now.len()
-            ),
-            Ordering::Equal => "".to_string(),
-        }
+        savegame.points
     ))
 }

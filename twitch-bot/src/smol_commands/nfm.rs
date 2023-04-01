@@ -57,7 +57,7 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
         ));
     }
 
-    let img = image::open("milk/01.png").unwrap();
+    let img = image::open("milk/02.png").unwrap();
     let (width, height) = img.dimensions();
     let mut out: RgbaImage = ImageBuffer::new(width, height);
 
@@ -95,7 +95,7 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
 
         let hash_raw = format!(
             "{}:{},{},{},{}:{},{},{},{}:{},{},{},{}:{},{},{},{}",
-            "01",
+            "02",
             &bg.0,
             &bg.1,
             &bg.2,
@@ -195,19 +195,10 @@ pub async fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String>
 
     let rarity_percent = (rarity as f32 / hash.len() as f32) * 100.0;
 
-    Some(format!("{}: here's your UNIQUE generated {} NFM 🦇 🌰  👉  {}/static/nfms/{}.png ... keep it a secret, cuz someone will want to take a screenshot of it 🤫 ",
-                 consumer.alias_name,
-                 if rarity_percent >= 80.0 {
-                     "LEGENDARY"
-                 } else if (70.0..80.0).contains(&rarity_percent) {
-                     "Epic"
-                 } else if (60.0..70.0).contains(&rarity_percent) {
-                     "Rare"
-                 } else {
-                     "common"
-                 },
-                 env::var("BASE_URL").expect("BASE_URL must be set for NFM command!"),
-                 hash
-                 )
-         )
+    Some(format!(
+        "{}: A Very Fine NFM Clueless  👉  {}/static/nfms/{}.png ",
+        consumer.alias_name,
+        env::var("BASE_URL").expect("BASE_URL must be set for NFM command!"),
+        hash
+    ))
 }
