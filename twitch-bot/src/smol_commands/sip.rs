@@ -273,11 +273,11 @@ pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
 
     for _ in 0..rand::thread_rng().gen_range(1..20) {
         let m = match rand::thread_rng().gen_range(0..4) {
-            0 => "moo",
-            1 => "mu",
-            2 => "mooooo",
-            3 => "muh",
-            _ => "mo",
+            0 => "moo ",
+            1 => "mu ",
+            2 => "mooooo ",
+            3 => "muh ",
+            _ => "mo ",
         };
 
         message2.push_str(m);
