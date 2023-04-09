@@ -2,6 +2,7 @@ pub mod give;
 pub mod join;
 pub mod mynfms;
 pub mod nfm;
+pub mod nfminfo;
 pub mod place;
 pub mod roulette;
 pub mod sellnfm;

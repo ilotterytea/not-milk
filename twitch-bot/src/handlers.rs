@@ -31,6 +31,7 @@ pub async fn irc_message_handler(
             "give" => smol_commands::give::run(consumer, msg_args),
             "roulette" => smol_commands::roulette::run(consumer, msg_args),
             "mynfms" => smol_commands::mynfms::run(consumer, msg_args),
+            "nfminfo" => smol_commands::nfminfo::run(consumer, msg_args),
             _ => None,
         };
 
