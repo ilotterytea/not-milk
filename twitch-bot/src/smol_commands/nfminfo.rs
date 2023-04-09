@@ -76,6 +76,19 @@ pub fn run(consumer: Consumer, msg_args: &ParsedMessage) -> Option<String> {
         .first::<Consumer>(conn)
         .expect("Cannot get a consumer");
 
+    if env::var("NFM_DELTA").is_err()
+        || env::var("NFM_DELTA_LAST_CHANGE").is_err()
+        || env::var("NFM_DELTA_LAST_CHANGE")
+            .unwrap()
+            .ne(&chrono::Utc::now().date_naive().to_string())
+    {
+        env::set_var("NFM_DELTA", nfm_delta.to_string());
+        env::set_var(
+            "NFM_DELTA_LAST_CHANGE",
+            chrono::Utc::now().date_naive().to_string(),
+        );
+    }
+
     Some(format!(
         "{}: NFM #{} (owner: @{}) -> rarity: {} ({}), purchased {} ago, best price to sell: {} 🥛 ",
         consumer.alias_name,
