@@ -1,14 +1,17 @@
 package kz.ilotterytea.fembajbot.api;
 
 import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
+import kz.ilotterytea.fembajbot.entities.Action;
+import kz.ilotterytea.fembajbot.entities.Channel;
+import kz.ilotterytea.fembajbot.entities.Consumer;
+import kz.ilotterytea.fembajbot.utils.HibernateUtil;
+import org.hibernate.Session;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author ilotterytea
@@ -43,13 +46,56 @@ public class CommandLoader extends ClassLoader {
 
     public Optional<String> run(String id, IRCMessageEvent event, ParsedMessage message) {
         Optional<Command> command = getCommand(id);
-        Optional<String> response = Optional.empty();
 
-        if (command.isPresent()) {
-            response = command.get().run(event, message);
+        if (command.isEmpty()) {
+            return Optional.empty();
         }
 
-        return response;
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        List<Channel> channels = session.createQuery("from Channel where aliasId = :aliasId", Channel.class)
+                .setParameter("aliasId", event.getChannel().getId())
+                .getResultList();
+
+        List<Consumer> consumers = session.createQuery("from Consumer where aliasId = :aliasId", Consumer.class)
+                .setParameter("aliasId", event.getUser().getId())
+                .getResultList();
+
+        if (!consumers.isEmpty() && !channels.isEmpty()) {
+            Channel channel = channels.get(0);
+            Consumer consumer = consumers.get(0);
+
+            List<Action> actions = session
+                    .createQuery(
+                            "from Action where consumer = :consumer AND channel = :channel AND commandId = :commandId ORDER BY creationTimestamp DESC",
+                            Action.class
+                    )
+                    .setParameter("consumer", consumer)
+                    .setParameter("channel", channel)
+                    .setParameter("commandId", id)
+                    .getResultList();
+
+            if (!actions.isEmpty()) {
+                Action action = actions.get(0);
+
+                if (new Date().getTime() - action.getCreationTimestamp().getTime() < command.get().getDelay()) {
+                    return Optional.empty();
+                }
+            }
+
+            Action action = new Action(channel, consumer, id, ((message.getSubcommand() != null) ? message.getSubcommand() + " " : "") + message.getMessage());
+            channel.addAction(action);
+            consumer.addAction(action);
+
+            session.getTransaction().begin();
+            session.persist(channel);
+            session.persist(consumer);
+            session.persist(action);
+            session.getTransaction().commit();
+        }
+
+        session.close();
+
+        return command.get().run(event, message);
     }
 
     public Optional<Command> getCommand(String id) {
