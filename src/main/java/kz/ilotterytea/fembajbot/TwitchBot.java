@@ -99,7 +99,7 @@ public class TwitchBot {
 
         if (!channels.isEmpty()) {
             List<User> convertedChannels = client.getHelix().getUsers(
-                    null,
+                    credential.getAccessToken(),
                     channels.stream().map(c -> c.getAliasId().toString()).collect(Collectors.toList()),
                     null
             ).execute().getUsers();
