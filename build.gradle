@@ -18,6 +18,7 @@ dependencies {
     implementation 'com.github.twitch4j:twitch4j:1.14.0'
     implementation 'ch.qos.logback:logback-classic:1.4.6'
     implementation 'org.reflections:reflections:0.10.2'
+    implementation 'com.google.guava:guava:31.1-android'
     implementation 'org.hibernate.orm:hibernate-core:6.2.1.Final'
     implementation 'org.postgresql:postgresql:42.6.0'
 }
