@@ -5,6 +5,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author ilotterytea
@@ -34,8 +36,12 @@ public class Channel {
     @Column(name = "opt_outed_at")
     private Date optOutTimestamp;
 
+    @OneToMany(mappedBy = "channel", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    private Set<Action> actions;
+
     public Channel(Integer aliasId) {
         this.aliasId = aliasId;
+        this.actions = new HashSet<>();
     }
 
     public Channel() {}
@@ -78,5 +84,25 @@ public class Channel {
 
     public void setOptOutTimestamp(Date optOutTimestamp) {
         this.optOutTimestamp = optOutTimestamp;
+    }
+
+    public Set<Action> getActions() {
+        return actions;
+    }
+
+    public void setActions(Set<Action> actions) {
+        for (Action action : actions) {
+            action.setChannel(this);
+        }
+        this.actions = actions;
+    }
+
+    public void addAction(Action action) {
+        action.setChannel(this);
+        this.actions.add(action);
+    }
+
+    public void removeAction(Action action) {
+        this.actions.remove(action);
     }
 }

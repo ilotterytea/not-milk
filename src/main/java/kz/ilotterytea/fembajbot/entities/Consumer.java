@@ -5,6 +5,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author ilotterytea
@@ -39,12 +41,18 @@ public class Consumer {
     @Column(name = "updated_at", nullable = false)
     private Date updateTimestamp;
 
+    @OneToMany(mappedBy = "consumer", cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    private Set<Action> actions;
+
     public Consumer(Integer aliasId, String aliasName) {
         this.aliasId = aliasId;
         this.aliasName = aliasName;
         this.points = 0;
         this.totalPoints = 0;
+        this.actions = new HashSet<>();
     }
+
+    public Consumer() {}
 
     public Integer getId() {
         return id;
@@ -100,5 +108,25 @@ public class Consumer {
 
     public void setUpdateTimestamp(Date updateTimestamp) {
         this.updateTimestamp = updateTimestamp;
+    }
+
+    public Set<Action> getActions() {
+        return actions;
+    }
+
+    public void setActions(Set<Action> actions) {
+        for (Action action : actions) {
+            action.setConsumer(this);
+        }
+        this.actions = actions;
+    }
+
+    public void addAction(Action action) {
+        action.setConsumer(this);
+        this.actions.add(action);
+    }
+
+    public void removeAction(Action action) {
+        this.actions.remove(action);
     }
 }

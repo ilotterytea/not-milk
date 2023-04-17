@@ -1,5 +1,6 @@
 package kz.ilotterytea.fembajbot.utils;
 
+import kz.ilotterytea.fembajbot.entities.Action;
 import kz.ilotterytea.fembajbot.entities.Channel;
 import kz.ilotterytea.fembajbot.entities.Consumer;
 import org.hibernate.SessionFactory;
@@ -21,6 +22,7 @@ public class HibernateUtil {
                     .configure()
                     .addAnnotatedClass(Channel.class)
                     .addAnnotatedClass(Consumer.class)
+                    .addAnnotatedClass(Action.class)
                     .buildSessionFactory();
         } catch (Throwable ex) {
             log.error("Couldn't create a session: ", ex);
