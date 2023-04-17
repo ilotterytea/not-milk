@@ -5,11 +5,14 @@ import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.TwitchClientBuilder;
 import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import com.github.twitch4j.helix.domain.User;
+import com.google.gson.Gson;
 import kz.ilotterytea.fembajbot.api.CommandLoader;
 import kz.ilotterytea.fembajbot.api.ParsedMessage;
 import kz.ilotterytea.fembajbot.entities.Channel;
 import kz.ilotterytea.fembajbot.entities.Consumer;
+import kz.ilotterytea.fembajbot.schemas.GlobalLines;
 import kz.ilotterytea.fembajbot.utils.HibernateUtil;
+import kz.ilotterytea.fembajbot.utils.ResourceUtils;
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +31,7 @@ public class TwitchBot {
     private OAuth2Credential credential;
     private TwitchClient client;
     private CommandLoader commandLoader;
+    private GlobalLines globalLines;
 
     private static TwitchBot instance;
 
@@ -43,6 +47,10 @@ public class TwitchBot {
         return commandLoader;
     }
 
+    public GlobalLines getGlobalLines() {
+        return globalLines;
+    }
+
     public static TwitchBot getInstance() {
         return instance;
     }
@@ -52,6 +60,8 @@ public class TwitchBot {
     }
 
     public void run() {
+        globalLines = new Gson().fromJson(ResourceUtils.readFileFromResources("lines/lines_en.json"), GlobalLines.class);
+
         commandLoader = new CommandLoader();
 
         credential = new OAuth2Credential("twitch", SharedConstants.TWITCH_OAUTH2_TOKEN);
