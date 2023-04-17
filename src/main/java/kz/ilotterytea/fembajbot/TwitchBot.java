@@ -63,12 +63,27 @@ public class TwitchBot {
 
         client.getChat().connect();
 
+        Session session = HibernateUtil.getSessionFactory().openSession();
+
         if (credential.getUserName() != null) {
             client.getChat().joinChannel(credential.getUserName());
+
+            // Create a channel in the database for the bot if it does not exist:
+            if (
+                    session.createQuery("from Channel where aliasId = :aliasId", Channel.class)
+                            .setParameter("aliasId", credential.getUserId())
+                            .getResultList()
+                            .isEmpty()
+            ) {
+                Channel channel = new Channel(Integer.parseInt(credential.getUserId()));
+
+                session.getTransaction().begin();
+                session.persist(channel);
+                session.getTransaction().commit();
+            }
         }
 
         // Joining "channel" entities chats:
-        Session session = HibernateUtil.getSessionFactory().openSession();
         List<Channel> channels = session.createQuery("from Channel where optOutTimestamp is null", Channel.class).getResultList();
 
         if (!channels.isEmpty()) {
