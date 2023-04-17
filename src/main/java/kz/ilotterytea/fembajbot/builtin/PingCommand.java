@@ -8,6 +8,7 @@ import kz.ilotterytea.fembajbot.utils.StringUtils;
 
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ public class PingCommand implements Command {
 
     @Override
     public List<String> getSubcommands() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override

@@ -8,6 +8,7 @@ import kz.ilotterytea.fembajbot.entities.Channel;
 import kz.ilotterytea.fembajbot.utils.HibernateUtil;
 import org.hibernate.Session;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,12 +29,12 @@ public class JoinCommand implements Command {
 
     @Override
     public List<String> getSubcommands() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public List<String> getAliases() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
