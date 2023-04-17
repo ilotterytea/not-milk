@@ -8,6 +8,7 @@ import com.github.twitch4j.helix.domain.User;
 import kz.ilotterytea.fembajbot.api.CommandLoader;
 import kz.ilotterytea.fembajbot.api.ParsedMessage;
 import kz.ilotterytea.fembajbot.entities.Channel;
+import kz.ilotterytea.fembajbot.entities.Consumer;
 import kz.ilotterytea.fembajbot.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -111,6 +112,23 @@ public class TwitchBot {
             Optional<ParsedMessage> message = ParsedMessage.parse(event.getMessage().get());
 
             if (message.isPresent()) {
+                // Create a new consumer if it does not exist:
+                Session session1 = HibernateUtil.getSessionFactory().openSession();
+                List<Consumer> consumers = session1.createQuery("from Consumer where aliasId = :aliasId", Consumer.class)
+                        .setParameter("aliasId", event.getUser().getId())
+                        .getResultList();
+
+                if (consumers.isEmpty()) {
+                    Consumer consumer = new Consumer(Integer.parseInt(event.getUser().getId()), event.getUser().getName());
+
+                    session1.getTransaction().begin();
+                    session1.persist(consumer);
+                    session1.getTransaction().commit();
+                }
+
+                session1.close();
+
+                // Run the command:
                 Optional<String> response = commandLoader.run(message.get().getId(), event, message.get());
 
                 response.ifPresent(s -> client.getChat().sendMessage(event.getChannel().getName(), s));
