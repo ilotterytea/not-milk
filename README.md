@@ -1,57 +1,55 @@
-# NOT milk
+[![Status Badge](https://github.com/ilotterytea/fembajbot/actions/workflows/build.yml/badge.svg)](https://github.com/ilotterytea/fembajbot/actions/workflows/build.yml)
 
-A silly Twitch bot with a minigame about drinking NOT milk.
-A web server with a peepo frontend included!!!
+# fembajbot
 
-## Features
-
-+ Drinking non-milk *(be careful, you may get real milk 😱 )*.
-+ Store for f█████ ████s that boost your stats in the game and in real life *(WIP)*.
-+ 'Femboy Hooters' *(at an early stage of development)*.
+fembajbot is a Twitch game chatbot that supplies "not milk" to your chat room.
+It was originally written in Rust, but was rewritten in Java because of the complexity of maintaining it.
 
 ## Prerequisites
++ PostgreSQL 15
++ JDK 11
 
-1. Rust Nightly
-2. Diesel CLI `cargo install diesel_cli`
-
-## Installation
-
-1. Clone the repo:
-
-```bash
-git clone https://github.com/ilotterytea/not-milk.git
-cd not-milk
+## Building from sources
+### 1. Cloning the repo
+```shell
+git clone https://github.com/ilotterytea/fembajbot.git
+cd fembajbot
 ```
 
-2. Setup the environment variables:<br>
-*.env example:*
+### 2. Setting up the Hibernate ORM configuration
+Create a file `hibernate.cfg.xml` in `src/main/resources` and put this template there.
+Replace the fields `DATABASE_NAME`, `USERNAME`, `PASSWORD`.
+```xml
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration SYSTEM "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <property name="connection.driver_class">org.postgresql.Driver</property>
+        <property name="connection.url">jdbc:postgresql://localhost:5432/DATABASE_NAME</property>
+        <property name="connection.username">USERNAME</property>
+        <property name="connection.password">PASSWORD</property>
 
-```env
-DATABASE_URL=database.db
-TWITCH_ACCESS_TOKEN=PUT_YOUR_TWITCH_ACCESS_TOKEN_HERE_FROM_YOUR_TWITCH_DEV_APPLICATION
-TWITCH_BOT_NAME=PUT_THE_NAME_OF_YOUR_BOT
-TWITCH_OAUTH2_TOKEN=PUT_THE_OAUTH2_TOKEN_OF_YOUR_BOT
-
-BOT_NAME=THE_TWITCH_USERNAME_OF_YOUR_BOT
-BOT_MAINTAINER=YOUR_TWITCH_USERNAME
-BOT_ICON_URL=THE_ICON_URL_OF_THE_BOT
-
-BASE_URL=BOT_WEBSITE_URL
+        <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+        <property name="current_session_context_class">thread</property>
+        <property name="cache.provider_class">org.hibernate.cache.internal.NoCacheProvider</property>
+        <property name="show_sql">false</property>
+        <property name="hbm2ddl.auto">update</property>
+    </session-factory>
+</hibernate-configuration>
 ```
 
-*infrastructure/.env example:*
-```env
-DATABASE_URL=../database.db
+### 3. Build the source
+```shell
+./gradlew shadowJar
+cd build/libs
 ```
 
-3. Finish the installation:
+### 4. Create a configuration file (config.properties)
+```properties
+twitch.oauth2_token=oauth:your_token_here
+``` 
 
-```bash
-cd infrastructure
-diesel setup
-cd ..
-
-cargo run -p twitch-bot #IF YOU ONLY WANT TO RUN THE BOT
-cargo run -p server #IF YOU ONLY WANT TO RUN THE WEBSERVER
+### 5. Run the bot
+```shell
+java -jar fembajbot-1.0.0-all.jar
 ```
-
