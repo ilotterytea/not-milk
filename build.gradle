@@ -31,7 +31,3 @@ test {
 application {
     mainClass = "kz.ilotterytea.fembajbot.Main"
 }
-
-shadowJar {
-    archiveFileName = "fembajbot.jar"
-}
