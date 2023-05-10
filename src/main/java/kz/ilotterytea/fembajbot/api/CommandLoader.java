@@ -44,7 +44,7 @@ public class CommandLoader extends ClassLoader {
         }
     }
 
-    public Optional<String> run(String id, IRCMessageEvent event, ParsedMessage message) {
+    public Optional<String> run(String id, IRCMessageEvent event, ParsedMessage message, Consumer consumer, Channel channel) {
         Optional<Command> command = getCommand(id);
 
         if (command.isEmpty()) {
@@ -52,50 +52,38 @@ public class CommandLoader extends ClassLoader {
         }
 
         Session session = HibernateUtil.getSessionFactory().openSession();
-        List<Channel> channels = session.createQuery("from Channel where aliasId = :aliasId", Channel.class)
-                .setParameter("aliasId", event.getChannel().getId())
+
+        List<Action> actions = session
+                .createQuery(
+                        "from Action where consumer = :consumer AND channel = :channel AND commandId = :commandId ORDER BY creationTimestamp DESC",
+                        Action.class
+                )
+                .setParameter("consumer", consumer)
+                .setParameter("channel", channel)
+                .setParameter("commandId", id)
                 .getResultList();
 
-        List<Consumer> consumers = session.createQuery("from Consumer where aliasId = :aliasId", Consumer.class)
-                .setParameter("aliasId", event.getUser().getId())
-                .getResultList();
+        if (!actions.isEmpty()) {
+            Action action = actions.get(0);
 
-        if (!consumers.isEmpty() && !channels.isEmpty()) {
-            Channel channel = channels.get(0);
-            Consumer consumer = consumers.get(0);
-
-            List<Action> actions = session
-                    .createQuery(
-                            "from Action where consumer = :consumer AND channel = :channel AND commandId = :commandId ORDER BY creationTimestamp DESC",
-                            Action.class
-                    )
-                    .setParameter("consumer", consumer)
-                    .setParameter("channel", channel)
-                    .setParameter("commandId", id)
-                    .getResultList();
-
-            if (!actions.isEmpty()) {
-                Action action = actions.get(0);
-
-                if (new Date().getTime() - action.getCreationTimestamp().getTime() < command.get().getDelay()) {
-                    return Optional.empty();
-                }
+            if (new Date().getTime() - action.getCreationTimestamp().getTime() < command.get().getDelay()) {
+                return Optional.empty();
             }
-
-            Action action = new Action(channel, consumer, id, ((message.getSubcommand() != null) ? message.getSubcommand() + " " : "") + message.getMessage());
-            channel.addAction(action);
-            consumer.addAction(action);
-
-            session.getTransaction().begin();
-            session.persist(channel);
-            session.persist(consumer);
-            session.persist(action);
-            session.getTransaction().commit();
         }
+
+        Action action = new Action(channel, consumer, id, ((message.getSubcommand() != null) ? message.getSubcommand() + " " : "") + message.getMessage());
+        channel.addAction(action);
+        consumer.addAction(action);
+
+        session.getTransaction().begin();
+        session.persist(channel);
+        session.persist(consumer);
+        session.persist(action);
+        session.getTransaction().commit();
 
         session.close();
 
-        return command.get().run(event, message);
+        return command.get().run(event, message, consumer, channel);
     }
 
     public Optional<Command> getCommand(String id) {

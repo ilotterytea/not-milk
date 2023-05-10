@@ -122,24 +122,45 @@ public class TwitchBot {
             Optional<ParsedMessage> message = ParsedMessage.parse(event.getMessage().get());
 
             if (message.isPresent()) {
-                // Create a new consumer if it does not exist:
                 Session session1 = HibernateUtil.getSessionFactory().openSession();
+                session1.getTransaction().begin();
+
+                // Getting the current channel:
+                List<Channel> eventChannels = session1.createQuery("from Channel where aliasId = :aliasId", Channel.class)
+                        .setParameter("aliasId", event.getChannel().getId())
+                        .getResultList();
+
+                Channel eventChannel;
+
+                if (eventChannels.isEmpty()) {
+                    eventChannel = new Channel(Integer.parseInt(event.getChannel().getId()));
+
+                    session1.persist(eventChannel);
+                    session1.getTransaction().commit();
+                } else {
+                    eventChannel = eventChannels.get(0);
+                }
+
+                // Create a new consumer if it does not exist:
                 List<Consumer> consumers = session1.createQuery("from Consumer where aliasId = :aliasId", Consumer.class)
                         .setParameter("aliasId", event.getUser().getId())
                         .getResultList();
 
-                if (consumers.isEmpty()) {
-                    Consumer consumer = new Consumer(Integer.parseInt(event.getUser().getId()), event.getUser().getName());
+                Consumer consumer;
 
-                    session1.getTransaction().begin();
+                if (consumers.isEmpty()) {
+                    consumer = new Consumer(Integer.parseInt(event.getUser().getId()), event.getUser().getName());
+
                     session1.persist(consumer);
                     session1.getTransaction().commit();
+                } else {
+                    consumer = consumers.get(0);
                 }
 
                 session1.close();
 
                 // Run the command:
-                Optional<String> response = commandLoader.run(message.get().getId(), event, message.get());
+                Optional<String> response = commandLoader.run(message.get().getId(), event, message.get(), consumer, eventChannel);
 
                 response.ifPresent(s -> client.getChat().sendMessage(event.getChannel().getName(), s));
             }

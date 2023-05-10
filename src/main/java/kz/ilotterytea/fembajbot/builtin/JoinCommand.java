@@ -5,6 +5,7 @@ import kz.ilotterytea.fembajbot.TwitchBot;
 import kz.ilotterytea.fembajbot.api.Command;
 import kz.ilotterytea.fembajbot.api.ParsedMessage;
 import kz.ilotterytea.fembajbot.entities.Channel;
+import kz.ilotterytea.fembajbot.entities.Consumer;
 import kz.ilotterytea.fembajbot.utils.HibernateUtil;
 import org.hibernate.Session;
 
@@ -38,7 +39,7 @@ public class JoinCommand implements Command {
     }
 
     @Override
-    public Optional<String> run(IRCMessageEvent event, ParsedMessage message) {
+    public Optional<String> run(IRCMessageEvent event, ParsedMessage message, Consumer consumer, Channel channel) {
         // Checking for the existence of this channel in the database
         Session session = HibernateUtil.getSessionFactory().openSession();
         List<Channel> channels = session.createQuery("from Channel where aliasId = :aliasId", Channel.class)
@@ -50,10 +51,10 @@ public class JoinCommand implements Command {
         }
 
         // Creating a new channel
-        Channel channel = new Channel(Integer.parseInt(event.getUser().getId()));
+        Channel targetChannel = new Channel(Integer.parseInt(event.getUser().getId()));
 
         session.getTransaction().begin();
-        session.persist(channel);
+        session.persist(targetChannel);
         session.getTransaction().commit();
         session.close();
 

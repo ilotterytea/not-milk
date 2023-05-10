@@ -4,6 +4,8 @@ import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.fembajbot.TwitchBot;
 import kz.ilotterytea.fembajbot.api.Command;
 import kz.ilotterytea.fembajbot.api.ParsedMessage;
+import kz.ilotterytea.fembajbot.entities.Channel;
+import kz.ilotterytea.fembajbot.entities.Consumer;
 import kz.ilotterytea.fembajbot.utils.StringUtils;
 
 import java.lang.management.ManagementFactory;
@@ -38,7 +40,7 @@ public class PingCommand implements Command {
     }
 
     @Override
-    public Optional<String> run(IRCMessageEvent event, ParsedMessage message) {
+    public Optional<String> run(IRCMessageEvent event, ParsedMessage message, Consumer consumer, Channel channel) {
         Runtime rt = Runtime.getRuntime();
         double usedMemMb = ((rt.totalMemory() - rt.freeMemory()) / 1024.0) / 1024.0;
         double totalMemMb = (rt.totalMemory() / 1024.0) / 1024.0;

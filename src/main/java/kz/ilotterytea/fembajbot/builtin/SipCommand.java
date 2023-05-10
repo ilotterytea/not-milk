@@ -4,6 +4,7 @@ import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
 import kz.ilotterytea.fembajbot.TwitchBot;
 import kz.ilotterytea.fembajbot.api.Command;
 import kz.ilotterytea.fembajbot.api.ParsedMessage;
+import kz.ilotterytea.fembajbot.entities.Channel;
 import kz.ilotterytea.fembajbot.entities.Consumer;
 import kz.ilotterytea.fembajbot.schemas.GlobalLines;
 import kz.ilotterytea.fembajbot.utils.HibernateUtil;
@@ -38,16 +39,10 @@ public class SipCommand implements Command {
     }
 
     @Override
-    public Optional<String> run(IRCMessageEvent event, ParsedMessage message) {
+    public Optional<String> run(IRCMessageEvent event, ParsedMessage message, Consumer consumer, Channel channel) {
         // Channel:
         Session session = HibernateUtil.getSessionFactory().openSession();
         List<Consumer> consumers = session.createQuery("from Consumer", Consumer.class).getResultList();
-
-        Consumer consumer = consumers
-                .stream()
-                .filter(c -> c.getAliasId().equals(Integer.parseInt(event.getUser().getId())))
-                .findFirst()
-                .orElse(new Consumer(Integer.parseInt(event.getUser().getId()), event.getUser().getName()));
 
         int position = consumers.indexOf(consumer);
 
