@@ -76,8 +76,8 @@ public class CommandLoader extends ClassLoader {
         consumer.addAction(action);
 
         session.getTransaction().begin();
-        session.persist(channel);
-        session.persist(consumer);
+        session.merge(channel);
+        session.merge(consumer);
         session.persist(action);
         session.getTransaction().commit();
 
