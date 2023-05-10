@@ -1,6 +1,7 @@
 package kz.ilotterytea.fembajbot.builtin;
 
 import com.github.twitch4j.chat.events.channel.IRCMessageEvent;
+import kz.ilotterytea.fembajbot.SharedConstants;
 import kz.ilotterytea.fembajbot.TwitchBot;
 import kz.ilotterytea.fembajbot.api.Command;
 import kz.ilotterytea.fembajbot.api.ParsedMessage;
@@ -51,8 +52,8 @@ public class SipCommand implements Command {
         }
 
         // Random points
-        final int MIN_POINTS = -30;
-        final int MAX_POINTS = 30;
+        final int MIN_POINTS = SharedConstants.SIP_MIN;
+        final int MAX_POINTS = SharedConstants.SIP_MAX;
 
         final GlobalLines lines = TwitchBot.getInstance().getGlobalLines();
 

@@ -14,6 +14,8 @@ import java.util.Properties;
 public class SharedConstants {
     public static final String TWITCH_OAUTH2_TOKEN;
     public static final String[] DEFAULT_PREFIXES;
+    public static final Integer SIP_MAX;
+    public static final Integer SIP_MIN;
 
     static {
         Properties properties = new Properties();
@@ -28,5 +30,7 @@ public class SharedConstants {
 
         TWITCH_OAUTH2_TOKEN = properties.getProperty("twitch.oauth2_token", null);
         DEFAULT_PREFIXES = properties.getProperty("default_prefixes", "~,\uD83E\uDD5B").split(",");
+        SIP_MAX = Integer.parseInt(properties.getProperty("sip.max", "20"));
+        SIP_MIN = Integer.parseInt(properties.getProperty("sip.max", "-20"));
     }
 }
